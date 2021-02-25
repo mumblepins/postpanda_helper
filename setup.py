@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="postpanda_helper",
-    version="0.0.2",
+    version="0.0.3",
     packages=["postpanda_helper"],
     install_requires=[
         "numpy~=1.19",
@@ -12,7 +12,7 @@ setup(
         "psycopg2~=2.8",
     ],
     python_requires="~=3.5",
-    url="",
+    url="https://github.com/ds-mn/postpanda_helper",
     license="LGPL-3.0",
     author="Daniel Sullivan",
     author_email="57496265+ds-mn@users.noreply.github.com",
