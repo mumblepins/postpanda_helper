@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="postpanda_helper",
-    version="0.0.1",
+    version="0.0.2",
     packages=["postpanda_helper"],
     install_requires=[
         "numpy~=1.19",

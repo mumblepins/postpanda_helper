@@ -1,7 +1,7 @@
 # coding=utf-8
 import random
 import string
-from typing import Union
+from typing import Union, Sequence, Mapping, Any
 
 import numpy as np
 import pandas as pd
@@ -138,7 +138,7 @@ class SelectSert:
         columns,
         table_name,
         new_col_name=None,
-        sql_col_name="code",
+        sql_column_names="code",
         sql_id_name="id",
         case_insensitive=True,
         delete_old=True,
@@ -146,7 +146,7 @@ class SelectSert:
         ids = self.get_ids_simple(
             self.clean_frame(frame[columns], case_insensitive),
             table_name,
-            sql_col_name=sql_col_name,
+            sql_col_name=sql_column_names,
             case_insensitive=case_insensitive,
         )
         idx_name = frame.index.name or "index"
@@ -157,14 +157,14 @@ class SelectSert:
         left.rename(columns={idx_name: idx_name_fake}, inplace=True)
         right = ids
         if case_insensitive:
-            left = self.to_lower(left)
-            right = self.to_lower(right)
+            left[columns] = self.to_lower(left[columns])
+            right[sql_column_names] = self.to_lower(right[sql_column_names])
         joined = pd.merge(
             left,
             right,
             how="left",
             left_on=columns,
-            right_on=sql_col_name,
+            right_on=sql_column_names,
         )
         joined.set_index(idx_name_fake, inplace=True)
         joined.index.name = idx_name
@@ -183,6 +183,45 @@ class SelectSert:
             if dmax <= nmax:
                 return data.astype(f"Int{2 ** n}")
 
+    def replace(
+        self,
+        frame: pd.DataFrame,
+        columns,
+        table_name,
+        new_col_name=None,
+        sql_column_names=None,
+        sql_id_name="id",
+        case_insensitive=True,
+        delete_old=True,
+    ):
+        if isinstance(columns, (tuple, list)):
+            if new_col_name is None:
+                raise ValueError("new_col_name must be defined for multiple column replacement")
+            return self.replace_with_ids(
+                frame,
+                columns,
+                table_name,
+                new_col_name,
+                sql_column_names,
+                sql_id_name,
+                case_insensitive,
+                delete_old,
+            )
+        return self.replace_with_id(
+            frame,
+            columns,
+            table_name,
+            new_col_name,
+            sql_column_names or "code",
+            sql_id_name,
+            case_insensitive,
+            delete_old,
+        )
+
+    def replace_multiple(self, frame: pd.DataFrame, replace_spec: Sequence[Mapping[str, Any]]):
+        for rs in replace_spec:
+            self.replace(frame, **rs)
+
     def replace_with_ids(
         self,
         frame: pd.DataFrame,
@@ -190,9 +229,9 @@ class SelectSert:
         table_name,
         new_col_name,
         sql_column_names=None,
-        delete_old=True,
         sql_id_name="id",
         case_insensitive=True,
+        delete_old=True,
     ):
         framecols = frame.reindex(columns=columns)
         if sql_column_names:
@@ -203,14 +242,16 @@ class SelectSert:
         sql_types = ids.loc[:, [c for c in ids.columns if c != sql_id_name]].dtypes
         idx_name = frame.index.name or "index"
         idx_name_fake = "fake_index_name"
-        left = self.fillna(framecols.astype(sql_types).reset_index())
+        left = self.fillna(
+            framecols.astype(sql_types[sql_types.keys() & framecols.columns]).reset_index()
+        )
 
         left.rename(columns={idx_name: idx_name_fake}, inplace=True)
         # left.rename(columns={idx_name: idx_name_fake}, inplace=True)
         right = self.fillna(ids)
         if case_insensitive:
-            left = self.to_lower(left)
-            right = self.to_lower(right)
+            left[sql_column_names or columns] = self.to_lower(left[sql_column_names or columns])
+            right[sql_column_names or columns] = self.to_lower(right[sql_column_names or columns])
         joined = pd.merge(
             left,
             right,
