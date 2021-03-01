@@ -25,8 +25,8 @@ jobs:
           python-version: '3.x'
       - name: Install pg_config
         run: |
-          apt-get update
-          apt-get install -y libpq-dev
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev
       - name: Poetry
         uses: abatilo/actions-poetry@v2.1.0
         with:
