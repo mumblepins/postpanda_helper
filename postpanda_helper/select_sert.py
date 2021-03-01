@@ -1,24 +1,28 @@
 # coding=utf-8
 import random
 import string
-from typing import Union, Sequence, Mapping, Any
+from typing import Union, Sequence, Mapping, Any, Optional
 
-import numpy as np
 import pandas as pd
-from pandas import Series
 from sqlalchemy import create_engine, MetaData, Table, types as satypes
+from sqlalchemy.engine import Engine
 
+from . import pd_helpers as pdh
 from .psql_helpers import PandaCSVtoSQL
 
 
 class SelectSert:
-    _na_fill = (
-        "na_value" + "".join(random.SystemRandom().choices(string.ascii_lowercase, k=6))
-    ).lower()
+    _IDX_NAME_FAKE = "fake_index_name_" + "".join(
+        random.SystemRandom().choices(string.ascii_lowercase, k=6)
+    )
 
-    _na_fill_int = np.uint64(random.SystemRandom().getrandbits(64)).astype(np.int64)
+    def __init__(self, connection: Union[str, Engine], schema: str):
+        """
 
-    def __init__(self, connection, schema):
+        Args:
+            connection: Connection string or sqlalchemy Engine
+            schema: schema where the lookup tables are located
+        """
         if isinstance(connection, str):
             self._conn = create_engine(connection)
         else:
@@ -26,14 +30,14 @@ class SelectSert:
         self._schema = schema
         self._tables = {}
 
-    def _get_current_ids(self, table, force_update=False):
+    def _get_current_ids(self, table: str, force_update=False) -> pd.DataFrame:
         if force_update or table not in self._tables:
             ret_ids = pd.read_sql_table(table, self._conn, schema=self._schema)
             ids = self._convert_dtypes_to_table(ret_ids, table)
             self._tables[table] = ids
         return self._tables[table]
 
-    def _convert_dtypes_to_table(self, frame, table):
+    def _convert_dtypes_to_table(self, frame: pd.DataFrame, table: str) -> pd.DataFrame:
         meta = MetaData(self._conn)
         tbl = Table(table, meta, autoload=True, schema=self._schema)
         for c in frame.columns:
@@ -48,8 +52,7 @@ class SelectSert:
                 frame[c] = frame[c].astype("boolean")
         return frame
 
-    def _insert(self, data, table):
-        # print(data.shape)
+    def _insert(self, data: Union[pd.Series, pd.DataFrame], table: str) -> None:
         if isinstance(data, pd.Series):
             data = pd.DataFrame(data)
         sql_writer = PandaCSVtoSQL(
@@ -62,29 +65,20 @@ class SelectSert:
         )
         sql_writer.process_simple()
 
-    def _fillmask(self, frame):
-        fill_dict = frame.columns.to_series()
-        num_cols = fill_dict.isin(frame.select_dtypes(include=np.number).columns)
-        fill_dict[num_cols] = self._na_fill_int
-        fill_dict[~num_cols] = self._na_fill
-        return fill_dict, num_cols
-
-    def fillna(self, frame: pd.DataFrame):
-        fill_dict, num_cols = self._fillmask(frame)
-        num_cols = frame.select_dtypes("number").columns
-        frame[num_cols] = frame[num_cols].astype("Int64")
-        return frame.fillna(value=fill_dict)
-
-    def unfillna(self, frame: pd.DataFrame):
-        fill_dict, _ = self._fillmask(frame)
-        return frame.replace(to_replace=fill_dict, value=pd.NA)
-
-    def get_ids(self, frame, table):
+    def _get_ids_frame(
+        self, frame: pd.DataFrame, table: str, case_insensitive: bool = True
+    ) -> pd.DataFrame:
         sql_ids = self._get_current_ids(table)
-        sql_tups = self.fillna(self.to_lower(sql_ids)[frame.columns]).apply(tuple, axis=1)
-        df_tups = self.fillna(self.to_lower(frame).astype(sql_ids[frame.columns].dtypes)).apply(
-            tuple, axis=1
-        )
+        if case_insensitive:
+            test_sql = pdh.to_lower(sql_ids)
+            test_frame = pdh.to_lower(frame)
+        else:
+            test_sql = sql_ids
+            test_frame = frame
+        # noinspection PyTypeChecker
+        sql_tups = pdh.fillna(test_sql[frame.columns]).apply(tuple, axis=1)
+        # noinspection PyTypeChecker
+        df_tups = pdh.fillna(test_frame.astype(sql_ids[frame.columns].dtypes)).apply(tuple, axis=1)
         to_remove = df_tups.isin(sql_tups)
         to_insert = frame[~to_remove]
         if to_insert.shape[0] == 0:
@@ -92,175 +86,90 @@ class SelectSert:
         self._insert(to_insert, table)
         return self._get_current_ids(table, force_update=True)
 
-    def get_ids_simple(self, series, table, sql_col_name="code", case_insensitive=True):
-        sql_ids = self._get_current_ids(table)
-        sql_tups: Series = sql_ids[sql_col_name].fillna(self._na_fill)
-        series_tups = series.astype(sql_tups.dtype).fillna(self._na_fill)
-        if case_insensitive:
-            to_remove = self.to_lower(series_tups).isin(self.to_lower(sql_tups))
-        else:
-            to_remove = series_tups.isin(sql_tups)
-
-        to_insert = series[~to_remove]
-        to_insert.name = sql_col_name
-        if to_insert.shape[0] == 0:
-            return sql_ids
-        self._insert(to_insert, table)
-        return self._get_current_ids(table, force_update=True)
-
-    @classmethod
-    def to_lower(cls, data) -> Union[pd.Series, pd.DataFrame]:
-        if isinstance(data, pd.Series):
-            try:
-                return data.str.lower()
-            except AttributeError:
-                return data.copy()
-        return data.apply(cls.to_lower)
-
-    @classmethod
-    def drop_duplicates_case_insensitive(cls, data, *, subset=None, keep="first"):
-        if isinstance(data, pd.Series):
-            return data[~data.str.lower().duplicated(keep)].copy(deep=True)
-        dup_frame = cls.to_lower(data)
-        dups = dup_frame.duplicated(subset, keep)
-        return data[~dups].copy(deep=True)
-
-    @classmethod
-    def clean_frame(cls, frame, case_insensitive=True):
-        if case_insensitive:
-            return cls.drop_duplicates_case_insensitive(frame).dropna(how="all")
-        else:
-            return frame.drop_duplicates().dropna(how="all")
-
-    def replace_with_id(
-        self,
-        frame,
-        columns,
-        table_name,
-        new_col_name=None,
-        sql_column_names="code",
-        sql_id_name="id",
-        case_insensitive=True,
-        delete_old=True,
-    ):
-        ids = self.get_ids_simple(
-            self.clean_frame(frame[columns], case_insensitive),
-            table_name,
-            sql_col_name=sql_column_names,
-            case_insensitive=case_insensitive,
-        )
+    def _unset_index(self, frame: pd.DataFrame, left: pd.DataFrame) -> str:
         idx_name = frame.index.name or "index"
+        left.rename(columns={idx_name: self._IDX_NAME_FAKE}, inplace=True)
+        return idx_name
 
-        idx_name_fake = "fake_index_name"
-
-        left = frame[[columns]].reset_index().astype("object")
-        left.rename(columns={idx_name: idx_name_fake}, inplace=True)
-        right = ids
-        if case_insensitive:
-            left[columns] = self.to_lower(left[columns])
-            right[sql_column_names] = self.to_lower(right[sql_column_names])
-        joined = pd.merge(
-            left,
-            right,
-            how="left",
-            left_on=columns,
-            right_on=sql_column_names,
-        )
-        joined.set_index(idx_name_fake, inplace=True)
-        joined.index.name = idx_name
-        new_col_name = new_col_name or columns
-        frame.loc[:, new_col_name] = self._downcast(joined.sort_index()[sql_id_name])
-        if delete_old:
-            frame.drop(columns=columns, inplace=True)
-
-    @staticmethod
-    def _downcast(data):
-        if not pd.api.types.is_integer_dtype(data):
-            return data
-        dmax = data.fillna(0).max()
-        for n in range(3, 7):
-            nmax = np.iinfo(f"int{2 ** n}").max
-            if dmax <= nmax:
-                return data.astype(f"Int{2 ** n}")
-
-    def replace(
+    def _set_index_and_join(
         self,
         frame: pd.DataFrame,
-        columns,
-        table_name,
-        new_col_name=None,
-        sql_column_names=None,
-        sql_id_name="id",
-        case_insensitive=True,
-        delete_old=True,
-    ):
-        if isinstance(columns, (tuple, list)):
-            if new_col_name is None:
-                raise ValueError("new_col_name must be defined for multiple column replacement")
-            return self.replace_with_ids(
-                frame,
-                columns,
-                table_name,
-                new_col_name,
-                sql_column_names,
-                sql_id_name,
-                case_insensitive,
-                delete_old,
-            )
-        return self.replace_with_id(
-            frame,
-            columns,
-            table_name,
-            new_col_name,
-            sql_column_names or "code",
-            sql_id_name,
-            case_insensitive,
-            delete_old,
-        )
+        joined: pd.DataFrame,
+        idx_name: str,
+        new_col_name: str,
+        sql_id_name: str,
+    ) -> None:
+        try:
+            joined.set_index(self._IDX_NAME_FAKE, inplace=True)
+        except AttributeError:
+            pass
+        joined.index.name = idx_name
+        frame.loc[:, new_col_name] = pdh.downcast(pdh.as_df(joined)[sql_id_name])
 
-    def replace_multiple(self, frame: pd.DataFrame, replace_spec: Sequence[Mapping[str, Any]]):
+    def replace_multiple(
+        self,
+        frame: pd.DataFrame,
+        replace_spec: Sequence[Mapping[str, Any]],
+    ) -> None:
         for rs in replace_spec:
-            self.replace(frame, **rs)
+            with pdh.disable_copy_warning():
+                self.replace_with_ids(frame, **rs)
 
     def replace_with_ids(
         self,
         frame: pd.DataFrame,
-        columns,
-        table_name,
-        new_col_name,
-        sql_column_names=None,
-        sql_id_name="id",
-        case_insensitive=True,
-        delete_old=True,
-    ):
-        framecols = frame.reindex(columns=columns)
+        columns: Union[Sequence[str], str],
+        table_name: str,
+        new_col_name: str,
+        *,
+        sql_column_names: Optional[Union[Sequence[str], str]] = None,
+        sql_id_name: str = "id",
+        case_insensitive: bool = True,
+        delete_old: bool = True,
+        sql_columns_notnull: Optional[Sequence[str]] = None,
+        column_split: Optional[Mapping[str, str]] = None,
+    ) -> None:
+        columns = pdh.as_list(columns)
+        sql_column_names = pdh.as_list(sql_column_names)
+        frame_cols = frame.reindex(columns=columns)
+        if column_split:
+            for k, v in column_split.items():
+                if frame_cols[k].dropna().any():
+                    frame_cols[k] = frame_cols[k].str.split(v)
         if sql_column_names:
-            framecols = framecols.rename(columns=dict(zip(columns, sql_column_names)))
-            framecols[list(set(sql_column_names) - set(framecols.columns))] = None
+            frame_cols = frame_cols.rename(columns=dict(zip(columns, sql_column_names)))
+            frame_cols.loc[:, list(set(sql_column_names) - set(frame_cols.columns))] = None
 
-        ids = self.get_ids(self.clean_frame(framecols, case_insensitive), table_name)
+        list_cols = frame_cols.applymap(lambda x: isinstance(x, list)).any()
+        have_lists = None
+        if list_cols.any():
+            have_lists = list_cols[list_cols].index
+            for c in have_lists:
+                frame_cols = frame_cols.explode(c)
+
+        if sql_columns_notnull:
+            frame_cols.dropna(subset=sql_columns_notnull, how="any", inplace=True)
+        if len(frame_cols) == 0:
+            return
+        ids = self._get_ids_frame(pdh.clean_frame(frame_cols, case_insensitive), table_name)
         sql_types = ids.loc[:, [c for c in ids.columns if c != sql_id_name]].dtypes
-        idx_name = frame.index.name or "index"
-        idx_name_fake = "fake_index_name"
-        left = self.fillna(
-            framecols.astype(sql_types[sql_types.keys() & framecols.columns]).reset_index()
-        )
 
-        left.rename(columns={idx_name: idx_name_fake}, inplace=True)
-        # left.rename(columns={idx_name: idx_name_fake}, inplace=True)
-        right = self.fillna(ids)
+        left = pdh.fillna(
+            frame_cols.astype(sql_types[sql_types.keys() & frame_cols.columns]).reset_index()
+        )
+        idx_name = self._unset_index(frame, left)
+        right = pdh.fillna(ids)
         if case_insensitive:
-            left[sql_column_names or columns] = self.to_lower(left[sql_column_names or columns])
-            right[sql_column_names or columns] = self.to_lower(right[sql_column_names or columns])
+            left[sql_column_names or columns] = pdh.to_lower(left[sql_column_names or columns])
+            right[sql_column_names or columns] = pdh.to_lower(right[sql_column_names or columns])
         joined = pd.merge(
             left,
             right,
             how="left",
             on=sql_column_names or columns,
         )
-        joined = self.unfillna(joined)
-        joined.set_index(idx_name_fake, inplace=True)
-        joined.index.name = idx_name
-        frame.loc[:, new_col_name] = self._downcast(joined.sort_index()[sql_id_name])
+        if have_lists is not None:
+            joined = joined.groupby(self._IDX_NAME_FAKE)[sql_id_name].apply(list)
+        self._set_index_and_join(frame, joined, idx_name, new_col_name, sql_id_name)
         if delete_old:
             frame.drop(columns=set(columns) & set(frame.columns), inplace=True)
