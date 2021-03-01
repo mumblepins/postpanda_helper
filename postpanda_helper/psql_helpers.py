@@ -1,22 +1,16 @@
 # coding=utf-8
 import io
-from sqlite3.dbapi2 import register_adapter
 
-import numpy as np
 import pandas as pd
 from pandas.core.dtypes.inference import is_dict_like
 from pandas.io.sql import SQLTable, pandasSQL_builder
 from psycopg2 import errorcodes, sql
-from psycopg2.extensions import AsIs, adapt
 from sqlalchemy import MetaData, Table
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql.ddl import CreateColumn
-
-register_adapter(type(pd.NA), lambda x: adapt(None))
-register_adapter(np.int64, lambda x: AsIs(None))
 
 
 @compiles(CreateColumn, "postgresql")
