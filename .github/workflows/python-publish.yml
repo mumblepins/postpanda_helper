@@ -14,15 +14,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build and publish to pypi
-      uses: JRubics/poetry-publish@v1.5
-      with:
-        pypi_token: ${{ secrets.PYPI_PASSWORD }}
-#    - name: Set up Python
-#      uses: actions/setup-python@v2
-#      with:
-#        python-version: '3.x'
+      - uses: actions/checkout@v2
+#      - name: Build and publish to pypi
+#        uses: JRubics/poetry-publish@v1.5
+#        with:
+#          pypi_token: ${{ secrets.PYPI_PASSWORD }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install pg_config
+        run: |
+          apt-get update
+          apt-get install -y libpq-dev
+      - name: Poetry
+        uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: 1.1.4
+      - name: build and publish
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          poetry install
+          poetry build
+          poetry publish
+
 #    - name: Install dependencies
 #      run: |
 #        python -m pip install --upgrade pip
