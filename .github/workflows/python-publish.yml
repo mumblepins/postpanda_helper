@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-#      - name: Build and publish to pypi
-#        uses: JRubics/poetry-publish@v1.5
-#        with:
-#          pypi_token: ${{ secrets.PYPI_PASSWORD }}
+      #      - name: Build and publish to pypi
+      #        uses: JRubics/poetry-publish@v1.5
+      #        with:
+      #          pypi_token: ${{ secrets.PYPI_PASSWORD }}
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -36,9 +36,9 @@ jobs:
           POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
           POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           run: |
-          poetry install
-          poetry build
-          poetry publish || poetry publish
+            poetry install
+            poetry build
+            poetry publish || poetry publish
 
 
 #    - name: Install dependencies
