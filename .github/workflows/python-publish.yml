@@ -4,10 +4,12 @@ name: Upload Python Package
 #  release:
 #    types: [created]
 
-on:
-  push:
-    tags:
-      - 'v*.*.*'
+#on:
+#  push:
+#    tags:
+#      - 'v*.*.*'
+
+on: [ push, pull_request ]
 
 jobs:
   deploy:
@@ -23,22 +25,21 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-      - name: Install pg_config
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpq-dev
       - name: Poetry
         uses: abatilo/actions-poetry@v2.1.0
         with:
           poetry-version: 1.1.4
-      - name: build and publish
+      - name: build
+        run: |
+          poetry install
+          poetry build
+      - name: publish
+        if: github.ref == 'ref/tags/v*.*.*'
         env:
           POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
           POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
         run: |
-            poetry install
-            poetry build
-            poetry publish || poetry publish
+          poetry publish || poetry publish
 
 
 #    - name: Install dependencies
