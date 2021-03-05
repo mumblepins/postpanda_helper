@@ -27,7 +27,7 @@ class PandasReader(LoggerMixin, Process):
         column_to_uuid: which column should we convert to an UUID?
 
             ``{'original_column': 'original_col_name', 'new_column': 'new_col_name'}``
-        **kwargs: keyword arguments to pass to :func:`pandas.read_csvPnadasWriter
+        **kwargs: keyword arguments to pass to :func:`pandas.read_csv`
     """
 
     def __init__(

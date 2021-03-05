@@ -1,6 +1,14 @@
+# coding=utf-8
+# noinspection PyPackageRequirements
 import geopandas as gpd
+
+# noinspection PyPackageRequirements
 from geoalchemy2 import Geometry
+
+# noinspection PyPackageRequirements
 from geoalchemy2.shape import to_shape
+
+# noinspection PyPackageRequirements
 from geopandas import GeoSeries
 from pandas import DataFrame, Series
 from shapely.geometry import Point
