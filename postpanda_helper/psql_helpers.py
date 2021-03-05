@@ -1,5 +1,7 @@
 # coding=utf-8
 import io
+import warnings
+from contextlib import contextmanager
 
 import pandas as pd
 from pandas.core.dtypes.inference import is_dict_like
@@ -8,7 +10,7 @@ from psycopg2 import errorcodes, sql
 from sqlalchemy import MetaData, Table
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine.base import Connection
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, SAWarning
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql.ddl import CreateColumn
 
@@ -84,6 +86,19 @@ class PandaCSVtoSQL:
             cols = [self.dframe.index.name] + cols
         return cols
 
+    @property
+    def sa_table(self):
+        if self._sa_table is None:
+            with disable_reflection_warning():
+                self._sa_table = Table(
+                    self.table, MetaData(self.engine), autoload=True, schema=self.schema
+                )
+        return self._sa_table
+
+    @property
+    def primary_key(self):
+        return [c.name for c in self.sa_table.primary_key.columns]
+
     def __init__(
         self,
         dframe: pd.DataFrame,
@@ -102,9 +117,10 @@ class PandaCSVtoSQL:
         self.chunksize = chunksize
         self.index = index
         self.table = table
+        self._sa_table = None
         self.schema = schema
-        if primary_key:
-            self.primary_key = conform_to_list(primary_key)
+        # if primary_key:
+        #     self.primary_key = conform_to_list(primary_key)
         self.full_tablename = self.get_full_tablename()
         self.temporary_tablename = "temp_table"
         self.cols = self.get_col_names()
@@ -126,7 +142,8 @@ class PandaCSVtoSQL:
         # Check if primary key exists; if not, create it
         if engine:
             meta = MetaData()
-            tt = Table(table, meta, schema=schema, autoload=True, autoload_with=engine)
+            with disable_reflection_warning():
+                tt = Table(table, meta, schema=schema, autoload=True, autoload_with=engine)
             if create_primary_key:
                 if len(tt.primary_key) == 0:
                     with engine.connect() as conn:
@@ -358,3 +375,35 @@ def psql_upsert(index_elements):
         conn.execute(do_update)
 
     return ret_func
+
+
+def possible_upsert(pdtable: SQLTable, conn: Connection, keys, data_iter):
+    tbl = pdtable.table
+    with disable_reflection_warning():
+        tbl._autoload(tbl.metadata, conn.engine, None)
+    data = [dict(zip(keys, row)) for row in data_iter]
+    unique_cols = [c for i in tbl.indexes if i.unique for c in i.columns]
+    index_elements = [c.name for c in unique_cols]
+    if len(index_elements) == 0:
+        index_elements = [c.name for c in tbl.primary_key.columns]
+    insert_stmt = insert(pdtable.table, data)
+    upsert_set = {k: insert_stmt.excluded[k] for k in keys if k not in index_elements}
+    if len(upsert_set) == 0:
+        do_update = insert_stmt.on_conflict_do_nothing(index_elements=index_elements)
+    else:
+        do_update = insert_stmt.on_conflict_do_update(
+            index_elements=index_elements, set_=upsert_set
+        )
+    conn.execute(do_update)
+
+
+@contextmanager
+def disable_reflection_warning():
+    try:
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore", category=SAWarning, message="Skipped unsupported reflection.*"
+            )
+            yield
+    finally:
+        pass
