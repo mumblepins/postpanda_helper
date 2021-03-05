@@ -18,9 +18,13 @@ jobs:
     - name: Install
       run: |
         poetry install -E geo
-    - uses: ammaraskar/sphinx-action@master
-      with:
-        docs-folder: "docs/"
+    - name: Build docs
+      run: |
+        cd docs
+        make html
+#    - uses: ammaraskar/sphinx-action@master
+#      with:
+#        docs-folder: "docs/"
     - uses: actions/upload-artifact@v1
       with:
         name: DocumentationHTML
