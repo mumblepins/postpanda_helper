@@ -163,14 +163,14 @@ def get_max_chars_in_common(s):
     lower_end = 1
     upper_end = s.str.len().min()
 
-    def good(l):
-        return len(s.str.slice(0, l).unique()) == 1
+    def is_good(num_chars):
+        return len(s.str.slice(0, num_chars).unique()) == 1
 
-    if not good(lower_end):
+    if not is_good(lower_end):
         return None
     while True:
         midpoint = int(np.ceil((lower_end + upper_end) / 2))
-        g = good(midpoint)
+        g = is_good(midpoint)
         if g:
             lower_end = midpoint
         else:

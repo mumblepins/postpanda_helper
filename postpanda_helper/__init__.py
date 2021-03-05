@@ -1,4 +1,5 @@
 # coding=utf-8
+from typing import Any, Optional, MutableMapping
 
 import numpy as np
 import pandas as pd
@@ -12,8 +13,14 @@ from .select_sert import SelectSert
 
 if HAS_GEO_EXTENSIONS:
     from .geo_helpers import get_geometry_type, geometry_to_ewkb
+
+    # noinspection PyPackageRequirements
     from geopandas.array import GeometryDtype
+
+    # noinspection PyPackageRequirements
     from geopandas import GeoSeries
+
+    # noinspection PyPackageRequirements
     from geoalchemy2.types import Geometry
 
 register_adapter(type(pd.NA), lambda x: adapt(None))
@@ -22,22 +29,22 @@ register_adapter(pd.Interval, interval_to_range)
 
 
 def pd_to_sql(
-    frame,
-    name,
+    frame: pd.DataFrame,
+    name: str,
     con,
-    schema=None,
+    schema: Optional[str] = None,
     if_exists="fail",
     index=True,
     index_label=None,
     chunksize=None,
-    dtype=None,
+    dtype: Optional[MutableMapping[str, Any]] = None,
     method=None,
 ):
     """
     With support for daterange and tsrange
 
     """
-    dtype = dtype or {}
+    dtm = dtype or {}
     copied = False
     columns = frame.columns
     for c in columns:
@@ -47,13 +54,13 @@ def pd_to_sql(
             ex = frame[c][frame[c].first_valid_index()]
             if isinstance(ex.left, pd.Timestamp):
                 if is_date_interval(ex):
-                    dtype[c] = DATERANGE
+                    dtm[c] = DATERANGE
                 elif hasattr(ex, "tz") and ex.tz is not None:
-                    dtype[c] = TSTZRANGE
+                    dtm[c] = TSTZRANGE
                 else:
-                    dtype[c] = TSRANGE
+                    dtm[c] = TSRANGE
             elif pd.api.types.is_number(ex.left):
-                dtype[c] = NUMRANGE
+                dtm[c] = NUMRANGE
         elif HAS_GEO_EXTENSIONS and isinstance(frame[c].dtype, GeometryDtype):
             # copy because we're going to mess with the column
             if not copied:
@@ -65,11 +72,21 @@ def pd_to_sql(
                 frame[c] = frame[c].astype("object")
                 continue
             srid = s.crs.to_epsg(min_confidence=25) or -1
-            dtype[c] = Geometry(geometry_type=geometry_type, srid=srid)
+            dtm[c] = Geometry(geometry_type=geometry_type, srid=srid)
             frame[c] = geometry_to_ewkb(frame[c], srid)
 
-    dtype = dtype or None
-    return frame.to_sql(name, con, schema, if_exists, index, index_label, chunksize, dtype, method)
+    dtm = dtm or None
+    return frame.to_sql(
+        name=name,
+        con=con,
+        schema=schema,
+        if_exists=if_exists,
+        index=index,
+        index_label=index_label,
+        chunksize=chunksize,
+        dtype=dtm,
+        method=method,
+    )
 
 
 __all__ = ["PandaCSVtoSQL", "SelectSert", "pd_to_sql"]
