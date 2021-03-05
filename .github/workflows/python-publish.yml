@@ -20,6 +20,7 @@ jobs:
         run: |
           poetry install
           poetry build
+          echo $GITHUB_REF
       - name: publish
         if: github.ref == 'ref/tags/v*.*.*'
         env:
