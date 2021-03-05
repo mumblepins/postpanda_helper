@@ -1,0 +1,506 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>postpanda_helper package &#8212; PostPanda Helper v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="postpanda_helper" href="modules.html" />
+    <link rel="prev" title="Welcome to PostPanda Helper’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="postpanda-helper-package">
+<h1>postpanda_helper package<a class="headerlink" href="#postpanda-helper-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-postpanda_helper.geo_helpers">
+<span id="postpanda-helper-geo-helpers-module"></span><h2>postpanda_helper.geo_helpers module<a class="headerlink" href="#module-postpanda_helper.geo_helpers" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-postpanda_helper.pandas_reader">
+<span id="postpanda-helper-pandas-reader-module"></span><h2>postpanda_helper.pandas_reader module<a class="headerlink" href="#module-postpanda_helper.pandas_reader" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="postpanda_helper.pandas_reader.PandasReader">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">postpanda_helper.pandas_reader.</span></code><code class="sig-name descname"><span class="pre">PandasReader</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue_max_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_checksum</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_to_uuid</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pandas_reader.PandasReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">logger_mixin.LoggerMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">multiprocessing.context.Process</span></code></p>
+<p>Multiprocess based CSV reader</p>
+<p>Can also either convert a column to a UUID (128 bit, hex encoded)
+by simply writing it as a zero padded hex value, or can calculate a
+checksum (As a UUID) for the whole line to use as a unique primary key.</p>
+<p>The checksum is started with the input filename and uses the <code class="xref py py-func docutils literal notranslate"><span class="pre">blake2b()</span></code>
+hash algo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – positional arguments to pass to <code class="xref py py-func docutils literal notranslate"><span class="pre">pandas.read_csv()</span></code></p></li>
+<li><p><strong>queue_max_size</strong> – max queue size</p></li>
+<li><p><strong>get_checksum</strong> – should we find the checksum of the line?</p></li>
+<li><p><strong>column_to_uuid</strong> – <p>which column should we convert to an UUID?</p>
+<p><code class="docutils literal notranslate"><span class="pre">{'original_column':</span> <span class="pre">'original_col_name',</span> <span class="pre">'new_column':</span> <span class="pre">'new_col_name'}</span></code></p>
+</p></li>
+<li><p><strong>**kwargs</strong> – keyword arguments to pass to <code class="xref py py-func docutils literal notranslate"><span class="pre">pandas.read_csv()</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="postpanda_helper.pandas_reader.PandasReader.queue">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">queue</span></code><a class="headerlink" href="#postpanda_helper.pandas_reader.PandasReader.queue" title="Permalink to this definition">¶</a></dt>
+<dd><p>A queue containing the chunks that have been read</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Returns</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.pandas_reader.PandasReader.run">
+<code class="sig-name descname"><span class="pre">run</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pandas_reader.PandasReader.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to be run in sub-process; can be overridden in sub-class</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-postpanda_helper.pandas_writer">
+<span id="postpanda-helper-pandas-writer-module"></span><h2>postpanda_helper.pandas_writer module<a class="headerlink" href="#module-postpanda_helper.pandas_writer" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="postpanda_helper.pandas_writer.PandasWriter">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">postpanda_helper.pandas_writer.</span></code><code class="sig-name descname"><span class="pre">PandasWriter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">engine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pandas_writer.PandasWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">logger_mixin.LoggerMixin</span></code></p>
+<p>Multiprocessing writer that writes to CSV files before copying into DB</p>
+<dl class="py method">
+<dt id="postpanda_helper.pandas_writer.PandasWriter.get_writer">
+<code class="sig-name descname"><span class="pre">get_writer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pandas_writer.PandasWriter.get_writer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.pandas_writer.PandasWriter.join">
+<code class="sig-name descname"><span class="pre">join</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">upsert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cleanup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pandas_writer.PandasWriter.join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Join and write SQL</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upsert</strong> – if we might need to overwrite things, insert everything
+into a Temp table, delete the existing rows, and then copy over
+to main table</p></li>
+<li><p><strong>cleanup</strong> – should we delete the temporary files?</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.pandas_writer.PandasWriter.stop">
+<code class="sig-name descname"><span class="pre">stop</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pandas_writer.PandasWriter.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Done writing to queue, so close it out.
+Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-postpanda_helper.pd_helpers">
+<span id="postpanda-helper-pd-helpers-module"></span><h2>postpanda_helper.pd_helpers module<a class="headerlink" href="#module-postpanda_helper.pd_helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.as_df">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">as_df</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.as_df" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.as_list">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">as_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.as_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.clean_frame">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">clean_frame</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_insensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.clean_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.convert_df_dates_to_timestamps">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">convert_df_dates_to_timestamps</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.convert_df_dates_to_timestamps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.df_chunker">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">df_chunker</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.series.Series</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.df_chunker" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.disable_copy_warning">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">disable_copy_warning</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.disable_copy_warning" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.downcast">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">downcast</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.series.Series</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas.core.series.Series</span><a class="headerlink" href="#postpanda_helper.pd_helpers.downcast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downcasts integer types to smallest possible type
+:param data:</p>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.drop_duplicates_case_insensitive">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">drop_duplicates_case_insensitive</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'first'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.drop_duplicates_case_insensitive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.fillna">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">fillna</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.series.Series</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.fillna" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.fillna_series">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">fillna_series</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">series</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.series.Series</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.fillna_series" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.get_common_initial_str">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">get_common_initial_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.series.Series</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.get_common_initial_str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.get_max_chars_in_common">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">get_max_chars_in_common</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.get_max_chars_in_common" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.interval_to_range">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">interval_to_range</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas._libs.interval.Interval</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.interval_to_range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.is_date_interval">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">is_date_interval</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas._libs.interval.Interval</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#postpanda_helper.pd_helpers.is_date_interval" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.period_to_interval">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">period_to_interval</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas._libs.tslibs.period.Period</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas._libs.interval.Interval</span><a class="headerlink" href="#postpanda_helper.pd_helpers.period_to_interval" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.to_date">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">to_date</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ser</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.series.Series</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.to_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.to_lower">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">to_lower</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.series.Series</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#postpanda_helper.pd_helpers.to_lower" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.unfillna">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">unfillna</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">,</span> </span><span class="pre">pandas.core.series.Series</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.unfillna" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_helpers.unfillna_series">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.pd_helpers.</span></code><code class="sig-name descname"><span class="pre">unfillna_series</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">series</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.series.Series</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_helpers.unfillna_series" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-postpanda_helper.psql_helpers">
+<span id="postpanda-helper-psql-helpers-module"></span><h2>postpanda_helper.psql_helpers module<a class="headerlink" href="#module-postpanda_helper.psql_helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">postpanda_helper.psql_helpers.</span></code><code class="sig-name descname"><span class="pre">PandaCSVtoSQL</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dframe</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_primary_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL.get_col_names">
+<code class="sig-name descname"><span class="pre">get_col_names</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL.get_col_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL.get_full_tablename">
+<code class="sig-name descname"><span class="pre">get_full_tablename</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quotes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL.get_full_tablename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL.import_csv">
+<em class="property"><span class="pre">async</span> </em><code class="sig-name descname"><span class="pre">import_csv</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_temp_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL.import_csv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL.import_csv_no_temp">
+<code class="sig-name descname"><span class="pre">import_csv_no_temp</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_fh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL.import_csv_no_temp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL.primary_key">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">primary_key</span></code><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL.primary_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL.process">
+<em class="property"><span class="pre">async</span> </em><code class="sig-name descname"><span class="pre">process</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_temp_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL.process" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL.process_simple">
+<code class="sig-name descname"><span class="pre">process_simple</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL.process_simple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL.sa_table">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">sa_table</span></code><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL.sa_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.psql_helpers.PandaCSVtoSQL.to_csv">
+<em class="property"><span class="pre">async</span> </em><code class="sig-name descname"><span class="pre">to_csv</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_handle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seek</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.PandaCSVtoSQL.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.psql_helpers.chunker">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.psql_helpers.</span></code><code class="sig-name descname"><span class="pre">chunker</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.chunker" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.psql_helpers.conform_to_list">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.psql_helpers.</span></code><code class="sig-name descname"><span class="pre">conform_to_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.conform_to_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.psql_helpers.create_df_table_altered">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.psql_helpers.</span></code><code class="sig-name descname"><span class="pre">create_df_table_altered</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">con</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.create_df_table_altered" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.psql_helpers.disable_reflection_warning">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.psql_helpers.</span></code><code class="sig-name descname"><span class="pre">disable_reflection_warning</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.disable_reflection_warning" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.psql_helpers.possible_upsert">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.psql_helpers.</span></code><code class="sig-name descname"><span class="pre">possible_upsert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdtable</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.io.sql.SQLTable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conn</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">sqlalchemy.engine.base.Connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_iter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.possible_upsert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.psql_helpers.psql_upsert">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.psql_helpers.</span></code><code class="sig-name descname"><span class="pre">psql_upsert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_elements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.psql_upsert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.psql_helpers.use_identity">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.psql_helpers.</span></code><code class="sig-name descname"><span class="pre">use_identity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compiler</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.psql_helpers.use_identity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-postpanda_helper.select_sert">
+<span id="postpanda-helper-select-sert-module"></span><h2>postpanda_helper.select_sert module<a class="headerlink" href="#module-postpanda_helper.select_sert" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="postpanda_helper.select_sert.SelectSert">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">postpanda_helper.select_sert.</span></code><code class="sig-name descname"><span class="pre">SelectSert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">sqlalchemy.engine.base.Engine</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_schema</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.select_sert.SelectSert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="postpanda_helper.select_sert.SelectSert.many_many_link">
+<code class="sig-name descname"><span class="pre">many_many_link</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.select_sert.SelectSert.many_many_link" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.select_sert.SelectSert.replace_multiple">
+<code class="sig-name descname"><span class="pre">replace_multiple</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace_spec</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="headerlink" href="#postpanda_helper.select_sert.SelectSert.replace_multiple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.select_sert.SelectSert.replace_with_ids">
+<code class="sig-name descname"><span class="pre">replace_with_ids</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_col_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_column_names</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_id_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_insensitive</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_old</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_columns_notnull</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_split</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_columns</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="headerlink" href="#postpanda_helper.select_sert.SelectSert.replace_with_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-postpanda_helper">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-postpanda_helper" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="postpanda_helper.PandaCSVtoSQL">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">postpanda_helper.</span></code><code class="sig-name descname"><span class="pre">PandaCSVtoSQL</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dframe</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_primary_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="postpanda_helper.PandaCSVtoSQL.get_col_names">
+<code class="sig-name descname"><span class="pre">get_col_names</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL.get_col_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.PandaCSVtoSQL.get_full_tablename">
+<code class="sig-name descname"><span class="pre">get_full_tablename</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quotes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL.get_full_tablename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.PandaCSVtoSQL.import_csv">
+<em class="property"><span class="pre">async</span> </em><code class="sig-name descname"><span class="pre">import_csv</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_temp_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL.import_csv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.PandaCSVtoSQL.import_csv_no_temp">
+<code class="sig-name descname"><span class="pre">import_csv_no_temp</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_fh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL.import_csv_no_temp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.PandaCSVtoSQL.primary_key">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">primary_key</span></code><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL.primary_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.PandaCSVtoSQL.process">
+<em class="property"><span class="pre">async</span> </em><code class="sig-name descname"><span class="pre">process</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_temp_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL.process" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.PandaCSVtoSQL.process_simple">
+<code class="sig-name descname"><span class="pre">process_simple</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL.process_simple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.PandaCSVtoSQL.sa_table">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">sa_table</span></code><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL.sa_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.PandaCSVtoSQL.to_csv">
+<em class="property"><span class="pre">async</span> </em><code class="sig-name descname"><span class="pre">to_csv</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_handle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seek</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.PandaCSVtoSQL.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="postpanda_helper.SelectSert">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">postpanda_helper.</span></code><code class="sig-name descname"><span class="pre">SelectSert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">sqlalchemy.engine.base.Engine</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_schema</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.SelectSert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="postpanda_helper.SelectSert.many_many_link">
+<code class="sig-name descname"><span class="pre">many_many_link</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.SelectSert.many_many_link" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.SelectSert.replace_multiple">
+<code class="sig-name descname"><span class="pre">replace_multiple</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace_spec</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="headerlink" href="#postpanda_helper.SelectSert.replace_multiple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="postpanda_helper.SelectSert.replace_with_ids">
+<code class="sig-name descname"><span class="pre">replace_with_ids</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_col_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_column_names</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_id_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_insensitive</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_old</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_columns_notnull</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_split</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_columns</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="headerlink" href="#postpanda_helper.SelectSert.replace_with_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="postpanda_helper.pd_to_sql">
+<code class="sig-prename descclassname"><span class="pre">postpanda_helper.</span></code><code class="sig-name descname"><span class="pre">pd_to_sql</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">con</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_exists</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fail'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">MutableMapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#postpanda_helper.pd_to_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>With support for daterange and tsrange</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PostPanda Helper</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">postpanda_helper package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-postpanda_helper.geo_helpers">postpanda_helper.geo_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-postpanda_helper.pandas_reader">postpanda_helper.pandas_reader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-postpanda_helper.pandas_writer">postpanda_helper.pandas_writer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-postpanda_helper.pd_helpers">postpanda_helper.pd_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-postpanda_helper.psql_helpers">postpanda_helper.psql_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-postpanda_helper.select_sert">postpanda_helper.select_sert module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-postpanda_helper">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">postpanda_helper</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">postpanda_helper package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to PostPanda Helper’s documentation!</a></li>
+      <li>Next: <a href="modules.html" title="next chapter">postpanda_helper</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Daniel Sullivan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/postpanda_helper.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
