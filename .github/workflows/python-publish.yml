@@ -22,7 +22,7 @@ jobs:
           poetry build
           echo $GITHUB_REF
       - name: publish
-        if: github.ref == 'refs/tags/v*.*.*'
+        if: contains(github.ref, "refs/tags/v")
         env:
           POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
           POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
