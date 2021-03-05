@@ -6,26 +6,22 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Poetry
-      uses: abatilo/actions-poetry@v2.1.0
-      with:
-        poetry-version: 1.1.4
-    - name: Install
-      run: |
-        poetry install -E geo
-    - name: Build docs
-      run: |
-        cd docs
-        make html
-#    - uses: ammaraskar/sphinx-action@master
-#      with:
-#        docs-folder: "docs/"
-    - uses: actions/upload-artifact@v1
-      with:
-        name: DocumentationHTML
-        path: docs/build/html/
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Poetry
+        uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: 1.1.4
+      - name: Install
+        run: |
+          poetry install -E geo
+      - name: Build docs
+        run: |
+          poetry run make -C docs html
+      - uses: actions/upload-artifact@v1
+        with:
+          name: DocumentationHTML
+          path: docs/build/html/
