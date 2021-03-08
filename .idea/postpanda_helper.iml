@@ -3,6 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/postpanda_helper.egg-info" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/build" />
     </content>
     <orderEntry type="jdk" jdkName="Poetry (postpanda_helper)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
