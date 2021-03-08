@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "postpanda_helper"
-version = "1.0.1"
+version = "1.0.2"
 description = "Various helpers for Postgres and Pandas, including SelectSert"
 authors = ["Daniel Sullivan <daniel.sullivan@state.mn.us>"]
-license = "LGPL-3.0"
+license = "LGPL-3.0-or-later"
+repository = "https://github.com/ds-mpca/postpanda_helper"
+documentation = "https://ds-mpca.github.io/postpanda_helper/"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
