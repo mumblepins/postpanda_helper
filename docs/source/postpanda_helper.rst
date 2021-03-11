@@ -12,6 +12,14 @@ postpanda\_helper.geo\_helpers module
    :undoc-members:
    :show-inheritance:
 
+postpanda\_helper.normalizer\_spec module
+-----------------------------------------
+
+.. automodule:: postpanda_helper.normalizer_spec
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 postpanda\_helper.pandas\_reader module
 ---------------------------------------
 
