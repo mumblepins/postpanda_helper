@@ -12,7 +12,7 @@ from logger_mixin import LoggerMixin
 from pathvalidate import sanitize_filepath
 from sqlalchemy.engine import Engine
 
-from postpanda_helper import PandaCSVtoSQL
+from .psql_helpers import PandaCSVtoSQL
 
 
 class PandasWriter(LoggerMixin):

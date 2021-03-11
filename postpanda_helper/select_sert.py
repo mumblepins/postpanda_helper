@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from . import pd_helpers as pdh
 from .geo_helpers import df_to_shape
 from .pd_helpers import get_common_initial_str, convert_df_dates_to_timestamps
-from .psql_helpers import possible_upsert, disable_reflection_warning
+from .psql_helpers import possible_upsert, disable_reflection_warning, pd_to_sql
 
 
 class SelectSert:
@@ -91,7 +91,6 @@ class SelectSert:
         return frame
 
     def _insert(self, data: Union[pd.Series, pd.DataFrame], table: str, schema=None) -> None:
-        from . import pd_to_sql
 
         if isinstance(data, pd.Series):
             data = pd.DataFrame(data)
@@ -155,7 +154,8 @@ class SelectSert:
         sql_tups = pdh.fillna(test_sql[frame.columns]).apply(tuple, axis=1)
         # noinspection PyTypeChecker
         df_tups = pdh.fillna(test_frame.astype(sql_ids[frame.columns].dtypes)).apply(tuple, axis=1)
-        to_remove = pd.Series([v in sql_tups.to_list() for v in df_tups], index=df_tups.index)
+        # to_remove = pd.Series([v in sql_tups.to_list() for v in df_tups], index=df_tups.index)
+        to_remove = df_tups.isin(sql_tups)
         to_insert = frame[~to_remove]
         if to_insert.shape[0] == 0:
             return sql_ids
@@ -270,6 +270,8 @@ class SelectSert:
         )
         sql_types = ids.loc[:, [c for c in ids.columns if c != sql_id_name]].dtypes
 
+        frame_cols = convert_df_dates_to_timestamps(frame_cols)
+        ids = convert_df_dates_to_timestamps(ids)
         left = pdh.fillna(
             frame_cols.astype(
                 sql_types[sql_types.index.intersection(frame_cols.columns)]
@@ -277,8 +279,6 @@ class SelectSert:
         )
         idx_name = self._unset_index(frame, left)
         right = pdh.fillna(ids)
-        convert_df_dates_to_timestamps(left)
-        convert_df_dates_to_timestamps(right)
         if case_insensitive:
             left[sql_column_names or columns] = pdh.to_lower(left[sql_column_names or columns])
             right[sql_column_names or columns] = pdh.to_lower(right[sql_column_names or columns])
