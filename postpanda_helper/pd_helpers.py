@@ -15,7 +15,8 @@ from postpanda_helper.geo_helpers import fill_geoseries
 _NA_FILL_INTEGER = np.uint64(random.SystemRandom().getrandbits(64)).astype(np.int64)
 _NA_FILL_OBJECT = "na_val_" + "".join(random.SystemRandom().choices(string.ascii_lowercase, k=8))
 
-DATE_FORMATS = {4: "%Y", 6: "%Y%m", 8: "%Y%m%d"}
+#  dictionary of frequency,  mask function, kwargs
+DATE_FREQ_MAP = {"A": "Y", "Q": "Q", "M": "M", "4": "W", "W": "W", "D": "D"}
 
 
 def downcast(data: pd.Series) -> pd.Series:
@@ -151,12 +152,31 @@ def df_chunker(frame: Union[pd.DataFrame, pd.Series], size):
         yield frame.iloc[pos : pos + size]
 
 
-def to_date(ser: pd.Series):
-    ser = ser.astype("Int64", copy=False).astype("str", copy=False)
-    for n, fmt in DATE_FORMATS.items():
-        msk = ser.str.len() == n
-        ser[msk] = pd.to_datetime(ser[msk], format=fmt, cache=True)
-    return ser.convert_dtypes()
+def ser_to_date(ser: pd.Series, freq, start_or_end=None):
+    if start_or_end is not None:
+        if start_or_end.lower().startswith("start"):
+            start_or_end = "start_time"
+        elif start_or_end.lower().startswith("end"):
+            start_or_end = "end_time"
+        else:
+            raise ValueError(f"Unknown start_or_end {start_or_end}")
+    else:
+        start_or_end = "end_time"
+    if pd.api.types.is_float_dtype(ser):
+        ser = ser.astype("Int64")
+    pdindx = getattr(pd.PeriodIndex(ser, freq=freq), start_or_end)
+
+    return pd.to_datetime(pdindx.date).to_series(index=ser.index)
+
+
+def to_date(frame: pd.DataFrame, freq_col, date_col, start_or_end=None, date_freq_map=None):
+    if date_freq_map is None:
+        date_freq_map = DATE_FREQ_MAP
+    for f, ser in frame.groupby(freq_col)[date_col]:
+        frame.loc[ser.index, date_col] = ser_to_date(
+            ser, freq=date_freq_map[f], start_or_end=start_or_end
+        )
+    frame.loc[:, date_col] = frame.loc[:, date_col].convert_dtypes()
 
 
 def get_max_chars_in_common(s):
@@ -187,11 +207,26 @@ def get_common_initial_str(s: pd.Series):
 
 
 def _infer_date(s: pd.Series):
+    if not len(s.dropna()):
+        return False
     return all(isinstance(a, date) for a in s.dropna())
 
 
-def convert_df_dates_to_timestamps(frame: pd.DataFrame):
+def _to_datetime(s: pd.Series):
+    has_tzinfo = s.apply(lambda x: getattr(x, "tzinfo", None) is not None).any()
+    if has_tzinfo:
+        return pd.to_datetime(s, utc=True)
+    return pd.to_datetime(s)
+
+
+def convert_df_dates_to_timestamps(frame: pd.DataFrame, inplace=False):
     obj_cols = frame.select_dtypes("object").columns
     date_test = frame[obj_cols].apply(_infer_date)
     date_cols = date_test[date_test].index
-    frame[date_cols] = frame[date_cols].apply(pd.to_datetime)
+
+    if inplace:
+        frame[date_cols] = frame[date_cols].apply(_to_datetime)
+    else:
+        ff = frame.copy()
+        ff[date_cols] = ff[date_cols].apply(_to_datetime)
+        return ff

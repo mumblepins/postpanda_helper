@@ -2,17 +2,21 @@
 import io
 import warnings
 from contextlib import contextmanager
+from typing import Optional, MutableMapping, Any
 
 import pandas as pd
 from pandas.core.dtypes.inference import is_dict_like
 from pandas.io.sql import SQLTable, pandasSQL_builder
 from psycopg2 import errorcodes, sql
 from sqlalchemy import MetaData, Table
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.postgresql import insert, DATERANGE, TSTZRANGE, TSRANGE, NUMRANGE
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.exc import ProgrammingError, SAWarning
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql.ddl import CreateColumn
+
+from .geo_helpers import convert_geometry_for_postgis
+from .pd_helpers import is_date_interval
 
 
 @compiles(CreateColumn, "postgresql")
@@ -294,3 +298,70 @@ def disable_reflection_warning():
             yield
     finally:
         pass
+
+
+def pd_to_sql(
+    frame: pd.DataFrame,
+    name: str,
+    con,
+    schema: Optional[str] = None,
+    if_exists="fail",
+    index=True,
+    index_label=None,
+    chunksize=None,
+    dtype: Optional[MutableMapping[str, Any]] = None,
+    method=None,
+):
+    """
+    With support for daterange and tsrange
+
+    """
+    dtm = dtype or {}
+    copied = False
+    columns = frame.columns
+    for c in columns:
+        if c in dtm:
+            continue
+        if pd.api.types.is_interval_dtype(frame[c]):
+            ex = frame[c][frame[c].first_valid_index()]
+            if isinstance(ex.left, pd.Timestamp):
+                if is_date_interval(ex):
+                    dtm[c] = DATERANGE
+                elif hasattr(ex, "tz") and ex.tz is not None:
+                    dtm[c] = TSTZRANGE
+                else:
+                    dtm[c] = TSRANGE
+            elif pd.api.types.is_number(ex.left):
+                dtm[c] = NUMRANGE
+        _frame, _dmap = convert_geometry_for_postgis(frame, c, not copied)
+        if _frame is not None:
+            frame = _frame
+        dtm.update(_dmap)
+        if not copied:
+            copied = not copied
+        # elif HAS_GEO_EXTENSIONS and isinstance(frame[c].dtype, GeometryDtype):
+        #     # copy because we're going to mess with the column
+        #     if not copied:
+        #         frame = frame.copy()
+        #     s = GeoSeries(frame[c])
+        #     try:
+        #         geometry_type, has_curve = get_geometry_type(s)
+        #     except ValueError:
+        #         frame[c] = frame[c].astype("object")
+        #         continue
+        #     srid = s.crs.to_epsg(min_confidence=25) or -1
+        #     dtm[c] = Geometry(geometry_type=geometry_type, srid=srid)
+        #     frame[c] = geometry_to_ewkb(frame[c], srid)
+
+    dtm = dtm or None
+    return frame.to_sql(
+        name=name,
+        con=con,
+        schema=schema,
+        if_exists=if_exists,
+        index=index,
+        index_label=index_label,
+        chunksize=chunksize,
+        dtype=dtm,
+        method=method,
+    )

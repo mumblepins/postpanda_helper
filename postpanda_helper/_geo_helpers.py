@@ -1,5 +1,7 @@
 # coding=utf-8
 # noinspection PyPackageRequirements
+from typing import Optional, MutableMapping
+
 import geopandas as gpd
 
 # noinspection PyPackageRequirements
@@ -10,13 +12,28 @@ from geoalchemy2.shape import to_shape
 
 # noinspection PyPackageRequirements
 from geopandas import GeoSeries
+from geopandas.array import GeometryDtype
 from pandas import DataFrame, Series
 from shapely.geometry import Point
+from shapely.geometry.base import BaseGeometry
 from shapely.geos import lgeos
 from shapely.wkb import dumps
 from sqlalchemy import Table
+from sqlalchemy.sql.type_api import UserDefinedType
 
 _NA_FILL_GEOM = Point(3.141, 59.265)
+
+
+# region Monkey Patch Point geometry to have hash
+# Note, Point is still mutable, so, use cautiously
+def _pt_hash(pt: Point):
+    return hash((*pt.coords, lgeos.GEOSGetSRID(pt._geom)))
+
+
+Point.__hash__ = _pt_hash
+
+
+# endregion
 
 
 def _df_to_shape(tbl: Table, frame: DataFrame) -> None:
@@ -72,4 +89,28 @@ def get_geometry_type(gs: "GeoSeries"):
 
 
 def geometry_to_ewkb(gs: GeoSeries, srid):
-    return gs.apply(lambda x: dumps(x, srid=srid, hex=True))
+    return gs.apply(
+        lambda x: dumps(x, srid=srid, hex=True) if isinstance(x, BaseGeometry) else None
+    )
+
+
+def _convert_geometry_for_postgis(
+    frame: DataFrame, column: str, in_place: bool = False
+) -> (Optional[DataFrame], MutableMapping[str, UserDefinedType]):
+    # copy because we're going to mess with the column
+    if in_place:
+        ret_val = None
+    else:
+        frame = frame.copy()
+        ret_val = frame
+    if isinstance(frame[column].dtype, GeometryDtype):
+        s = GeoSeries(frame[column])
+        try:
+            geometry_type, has_curve = get_geometry_type(s)
+        except ValueError:
+            frame[column] = frame[column].astype("object")
+            return ret_val, {}
+        srid = s.crs.to_epsg(min_confidence=25) or -1
+        frame[column] = geometry_to_ewkb(frame[column], srid)
+        return ret_val, {column: Geometry(geometry_type=geometry_type, srid=srid)}
+    return ret_val, {}
