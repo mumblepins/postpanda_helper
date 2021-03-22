@@ -15,9 +15,11 @@ jobs:
         with:
           # All of these options are optional, so you can remove them if you are happy with the defaults
           concurrent_skipping: 'same_content'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule", "create", "release"]'
+
   #          skip_after_successful_duplicate: 'true'
   #          paths_ignore: '["**/README.md", "**/docs/**"]'
-  #          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+  #          do_not_skip'["pull_request", "workflow_dispatch", "schedule"]'
 
   docs:
     needs: pre_job
@@ -44,6 +46,7 @@ jobs:
           name: DocumentationHTML
           path: docs/build/html/
       - name: Commit documentation changes
+        if: ${{ github.event_name != 'pull_request' && github.refs == 'refs/heads/main' }}
         run: |
           git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git --branch gh-pages --single-branch gh-pages
           cp -r docs/build/html/* gh-pages/
@@ -55,6 +58,7 @@ jobs:
           # The above command will fail if no changes were present, so we ignore
           # the return code.
       - name: Push changes
+        if: ${{ github.event_name != 'pull_request' && github.refs == 'refs/heads/main' }}
         uses: ad-m/github-push-action@master
         with:
           branch: gh-pages
