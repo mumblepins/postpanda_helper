@@ -6,6 +6,7 @@ import yaml
 from pandas import DataFrame
 
 from postpanda_helper import SelectSert
+from postpanda_helper.pd_helpers import to_string_tuples_drop_val
 
 
 def handle_exec(obj):
@@ -58,7 +59,9 @@ def load_spec(file_path):
     return walk(yd)
 
 
-def normalizer(frame: DataFrame, spec_file: Union[str, PathLike], substituter: SelectSert) -> None:
+def normalizer(
+    frame: DataFrame, spec_file: Union[str, PathLike], substituter: SelectSert
+) -> list[DataFrame]:
     """Normalizes dataframe based on a YAML spec file
 
     Modifies dataframe inplace
@@ -158,12 +161,25 @@ def normalizer(frame: DataFrame, spec_file: Union[str, PathLike], substituter: S
             - geography_id
           table:  x_data_points_geography
 
+        - action: combine_to_tuples
+          delete_old: true
+          columns:
+            charge_dep_gal_100mile:
+              - city_cd
+              - highway_cd
+              - combined_cd
+            elec_comp_kwh_100mile:
+              - city_e
+              - highway_e
+              - comb_e
+
     Args:
         frame: frame to modify
         spec_file: path to YAML file
         substituter:
     """
     replace_spec = load_spec(spec_file)
+    output = []
     for rs in replace_spec:
         action = rs.pop("action")
         print(action)
@@ -197,5 +213,17 @@ def normalizer(frame: DataFrame, spec_file: Union[str, PathLike], substituter: S
             frame.dropna(axis=1, how="all", inplace=True)
         elif action == "many_to_many":
             substituter.many_many_link(frame, **rs)
+        elif action == "combine_to_tuples":
+            drop_cols = rs.get("delete_old", False)
+            for k, v in rs["columns"].items():
+                frame[k] = to_string_tuples_drop_val(frame.reindex(columns=v))
+                if drop_cols:
+                    frame.drop(columns=set(v) - rs["columns"].keys(), inplace=True, errors="ignore")
+        elif action == "output_frame":
+            if "columns" in rs:
+                output.append(frame.reindex(columns=rs["columns"]).copy())
+            else:
+                output.append(frame.copy())
         else:
             raise NotImplementedError(f"unknown action: {action}")
+    return output
