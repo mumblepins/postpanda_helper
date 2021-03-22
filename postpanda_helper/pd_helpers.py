@@ -19,6 +19,48 @@ _NA_FILL_OBJECT = "na_val_" + "".join(random.SystemRandom().choices(string.ascii
 DATE_FREQ_MAP = {"A": "Y", "Q": "Q", "M": "M", "4": "W", "W": "W", "D": "D"}
 
 
+def to_string_tuples(frame):
+    """Converts frame columns to combined tuple string"""
+    rows = []
+    for r in frame.itertuples(index=False):
+        row = [str(a) if pd.notna(a) else "" for a in r]
+        if all([a == "" for a in row]):
+            rows.append(pd.NA)
+        else:
+            rows.append(f'({",".join(row)})')
+
+    return pd.Series(
+        rows,
+        index=frame.index,
+    )
+
+
+def value_to_nan(frame, value=0.0):
+    return frame.replace(value, pd.NA)
+
+
+def to_string_tuples_drop_val(frame, value=0.0):
+    return to_string_tuples(value_to_nan(frame, value))
+
+
+def strip_all_spaces(frame: Union[pd.Series, pd.DataFrame]):
+    """strips all extra spaces (equivalent to a trim and remove doubled spaces)
+
+    Args:
+        frame:
+
+    Returns:
+
+    """
+
+    if isinstance(frame, pd.Series):
+        if pd.api.types.is_object_dtype(frame):
+            return frame.str.replace(" +", " ", regex=True).str.strip()
+        else:
+            return frame
+    return frame.apply(strip_all_spaces)
+
+
 def downcast(data: pd.Series) -> pd.Series:
     """
     Downcasts integer types to smallest possible type
@@ -35,6 +77,18 @@ def downcast(data: pd.Series) -> pd.Series:
         nmax = np.iinfo(f"int{2 ** n}").max
         if dmax <= nmax:
             return data.astype(f"Int{2 ** n}")
+
+
+def map_to_bool(series: pd.Series, true_val=None, false_val=None, fillna=False):
+    rep_map = {}
+    if true_val is not None:
+        rep_map[true_val] = True
+    if false_val is not None:
+        rep_map[false_val] = False
+    series = series.replace(rep_map)
+    if fillna is not None:
+        series = series.fillna(fillna)
+    return series
 
 
 def as_list(obj):
