@@ -1,6 +1,6 @@
 # coding=utf-8
 import asyncio
-import bz2
+import gzip
 import tempfile
 from multiprocessing import Queue, Process
 from pathlib import Path
@@ -115,7 +115,7 @@ class _PandasWriter(LoggerMixin):
             mode = "at"
         else:
             mode = "rt"
-        return bz2.open(self._path, mode, compresslevel=4, encoding="utf8", newline="\n")
+        return gzip.open(self._path, mode, compresslevel=1, encoding="utf8", newline="\n")
 
     def _writer(self):
         with self._get_file() as fh:
