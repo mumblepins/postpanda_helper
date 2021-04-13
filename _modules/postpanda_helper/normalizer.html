@@ -1,0 +1,427 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>postpanda_helper.normalizer &mdash; PostPanda Helper v0.1.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PostPanda Helper
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">postpanda_helper</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PostPanda Helper</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>postpanda_helper.normalizer</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for postpanda_helper.normalizer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding=utf-8</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">PathLike</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+<span class="kn">from</span> <span class="nn">postpanda_helper</span> <span class="kn">import</span> <span class="n">SelectSert</span>
+<span class="kn">from</span> <span class="nn">postpanda_helper.pd_helpers</span> <span class="kn">import</span> <span class="n">to_string_tuples_drop_val</span>
+
+
+<div class="viewcode-block" id="handle_exec"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.normalizer.handle_exec">[docs]</a><span class="k">def</span> <span class="nf">handle_exec</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">exec</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">],</span> <span class="n">g</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;keys&quot;</span><span class="p">]:</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="walk_list"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.normalizer.walk_list">[docs]</a><span class="k">def</span> <span class="nf">walk_list</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">walk_list</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">walk_dict</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="walk_dict"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.normalizer.walk_dict">[docs]</a><span class="k">def</span> <span class="nf">walk_dict</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="n">to_add</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;to_exec&quot;</span><span class="p">:</span>
+            <span class="n">exec_dict</span> <span class="o">=</span> <span class="n">handle_exec</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="k">del</span> <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">to_add</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">exec_dict</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">walk_list</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">walk_dict</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
+    <span class="n">obj</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">to_add</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="walk"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.normalizer.walk">[docs]</a><span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">walk_list</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">walk_dict</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="load_spec"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.normalizer.load_spec">[docs]</a><span class="k">def</span> <span class="nf">load_spec</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+        <span class="n">yd</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">walk</span><span class="p">(</span><span class="n">yd</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="normalizer"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.normalizer.normalizer">[docs]</a><span class="k">def</span> <span class="nf">normalizer</span><span class="p">(</span>
+    <span class="n">frame</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">spec_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PathLike</span><span class="p">],</span> <span class="n">substituter</span><span class="p">:</span> <span class="n">SelectSert</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Normalizes dataframe based on a YAML spec file</span>
+
+<span class="sd">    Modifies dataframe inplace</span>
+
+<span class="sd">    **YAML Example:**</span>
+
+<span class="sd">    .. code-block:: yaml</span>
+
+<span class="sd">        - action:       replace_id</span>
+<span class="sd">          columns:</span>
+<span class="sd">            - datasource_id</span>
+<span class="sd">            - units</span>
+<span class="sd">          delete_old:   false</span>
+<span class="sd">          new_col_name: unit_id</span>
+<span class="sd">          sql_column_names:</span>
+<span class="sd">            - datasource_id</span>
+<span class="sd">            - name</span>
+<span class="sd">          table_name:   units</span>
+
+<span class="sd">        - action:           replace_id</span>
+<span class="sd">          columns:          f</span>
+<span class="sd">          delete_old:       false</span>
+<span class="sd">          new_col_name:     frequency_id</span>
+<span class="sd">          sql_column_names: name</span>
+<span class="sd">          table_name:       frequency</span>
+
+<span class="sd">        - action:  apply_funcs</span>
+<span class="sd">          to_exec:</span>
+<span class="sd">            keys:</span>
+<span class="sd">              - functions</span>
+<span class="sd">            # language=Python</span>
+<span class="sd">            code: |</span>
+<span class="sd">                   from functools import partial</span>
+<span class="sd">                   import pandas as pd</span>
+<span class="sd">                   from postpanda_helper.pd_helpers import to_date</span>
+
+
+<span class="sd">                   def col_to_pt(s: pd.Series):</span>
+<span class="sd">                       import geopandas as gpd</span>
+
+<span class="sd">                       latlon = s.str.split(&quot;,&quot;, expand=True)</span>
+<span class="sd">                       out = gpd.GeoSeries(gpd.points_from_xy(latlon[1], latlon[0], crs=&quot;WGS84&quot;))</span>
+<span class="sd">                       out[s.isna()] = None</span>
+<span class="sd">                       return out</span>
+
+
+<span class="sd">                   functions = {</span>
+<span class="sd">                       None: [</span>
+<span class="sd">                           partial(to_date, freq_col=&quot;f&quot;, date_col=&quot;end&quot;, start_or_end=&quot;end&quot;),</span>
+<span class="sd">                           partial(to_date, freq_col=&quot;f&quot;, date_col=&quot;start&quot;, start_or_end=&quot;start&quot;),</span>
+<span class="sd">                       ],</span>
+<span class="sd">                       &quot;last_updated&quot;: lambda x: pd.to_datetime(x, utc=True),</span>
+<span class="sd">                       &quot;latlon&quot;: col_to_pt,</span>
+<span class="sd">                       &quot;latlon2&quot;: col_to_pt,</span>
+<span class="sd">                   }</span>
+
+<span class="sd">        - action: drop_cols</span>
+<span class="sd">          to_drop:</span>
+<span class="sd">            - units</span>
+<span class="sd">            - iso3166</span>
+<span class="sd">            - unitsshort</span>
+<span class="sd">            - lon</span>
+<span class="sd">            - lat</span>
+<span class="sd">            - lon2</span>
+<span class="sd">            - lat2</span>
+<span class="sd">        - action: drop_na_cols</span>
+
+<span class="sd">        - action: rename_cols</span>
+<span class="sd">          name_map:</span>
+<span class="sd">            end:   end_date</span>
+<span class="sd">            start: start_date</span>
+
+<span class="sd">        - action:      extra_to_json</span>
+<span class="sd">          excluded:</span>
+<span class="sd">            - f</span>
+<span class="sd">            - series_id</span>
+<span class="sd">            - name</span>
+<span class="sd">            - description</span>
+<span class="sd">            - start_date</span>
+<span class="sd">            - end_date</span>
+<span class="sd">            - last_updated</span>
+<span class="sd">            - geoset_id</span>
+<span class="sd">            - data</span>
+<span class="sd">            - datasource_id</span>
+<span class="sd">            - frequency_id</span>
+<span class="sd">            - source_id</span>
+<span class="sd">            - unit_id</span>
+<span class="sd">            - geography_id</span>
+<span class="sd">            - geography2_id</span>
+<span class="sd">            - latlon</span>
+<span class="sd">            - latlon2</span>
+<span class="sd">          json_column: extra_data</span>
+
+<span class="sd">        - action: many_to_many</span>
+<span class="sd">          columns:</span>
+<span class="sd">            - tag</span>
+<span class="sd">            - geography_id</span>
+<span class="sd">          table:  x_data_points_geography</span>
+
+<span class="sd">        - action: combine_to_tuples</span>
+<span class="sd">          delete_old: true</span>
+<span class="sd">          columns:</span>
+<span class="sd">            charge_dep_gal_100mile:</span>
+<span class="sd">              - city_cd</span>
+<span class="sd">              - highway_cd</span>
+<span class="sd">              - combined_cd</span>
+<span class="sd">            elec_comp_kwh_100mile:</span>
+<span class="sd">              - city_e</span>
+<span class="sd">              - highway_e</span>
+<span class="sd">              - comb_e</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        frame: frame to modify</span>
+<span class="sd">        spec_file: path to YAML file</span>
+<span class="sd">        substituter:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">replace_spec</span> <span class="o">=</span> <span class="n">load_spec</span><span class="p">(</span><span class="n">spec_file</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rs</span> <span class="ow">in</span> <span class="n">replace_spec</span><span class="p">:</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;action&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;replace_id&quot;</span><span class="p">:</span>
+            <span class="n">substituter</span><span class="o">.</span><span class="n">replace_with_ids</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="o">**</span><span class="n">rs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;drop_cols&quot;</span><span class="p">:</span>
+            <span class="n">frame</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">rs</span><span class="p">[</span><span class="s2">&quot;to_drop&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;apply_funcs&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">rs</span><span class="p">[</span><span class="s2">&quot;functions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+                    <span class="n">f</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">sf</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">sf</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">c</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">sf</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+                <span class="c1"># if c in frame:</span>
+                <span class="c1">#     frame[c] = f(frame[c])</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;rename_cols&quot;</span><span class="p">:</span>
+            <span class="n">frame</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">rs</span><span class="p">[</span><span class="s2">&quot;name_map&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;extra_to_json&quot;</span><span class="p">:</span>
+            <span class="n">cols_for_json</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">rs</span><span class="p">[</span><span class="s2">&quot;excluded&quot;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols_for_json</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">frame</span><span class="p">[</span><span class="n">rs</span><span class="p">[</span><span class="s2">&quot;json_column&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">cols_for_json</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;drop_na_cols&quot;</span><span class="p">:</span>
+            <span class="n">frame</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;many_to_many&quot;</span><span class="p">:</span>
+            <span class="n">substituter</span><span class="o">.</span><span class="n">many_many_link</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="o">**</span><span class="n">rs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;combine_to_tuples&quot;</span><span class="p">:</span>
+            <span class="n">drop_cols</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;delete_old&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">rs</span><span class="p">[</span><span class="s2">&quot;columns&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">frame</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_string_tuples_drop_val</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">v</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">drop_cols</span><span class="p">:</span>
+                    <span class="n">frame</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-</span> <span class="n">rs</span><span class="p">[</span><span class="s2">&quot;columns&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;output_frame&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;columns&quot;</span> <span class="ow">in</span> <span class="n">rs</span><span class="p">:</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">rs</span><span class="p">[</span><span class="s2">&quot;columns&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unknown action: </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Daniel Sullivan.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

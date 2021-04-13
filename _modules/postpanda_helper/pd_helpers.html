@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>postpanda_helper.pd_helpers &mdash; PostPanda Helper v0.1.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PostPanda Helper
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">postpanda_helper</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PostPanda Helper</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>postpanda_helper.pd_helpers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for postpanda_helper.pd_helpers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding=utf-8</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">psycopg2._psycopg</span> <span class="kn">import</span> <span class="n">adapt</span>
+<span class="kn">from</span> <span class="nn">psycopg2._range</span> <span class="kn">import</span> <span class="n">DateRange</span><span class="p">,</span> <span class="n">DateTimeTZRange</span><span class="p">,</span> <span class="n">DateTimeRange</span><span class="p">,</span> <span class="n">NumericRange</span>
+
+<span class="kn">from</span> <span class="nn">postpanda_helper.geo_helpers</span> <span class="kn">import</span> <span class="n">fill_geoseries</span>
+
+<span class="n">_NA_FILL_INTEGER</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">SystemRandom</span><span class="p">()</span><span class="o">.</span><span class="n">getrandbits</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+<span class="n">_NA_FILL_OBJECT</span> <span class="o">=</span> <span class="s2">&quot;na_val_&quot;</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">SystemRandom</span><span class="p">()</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">8</span><span class="p">))</span>
+
+<span class="c1">#  dictionary of frequency,  mask function, kwargs</span>
+<span class="n">DATE_FREQ_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">:</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="s2">&quot;4&quot;</span><span class="p">:</span> <span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;W&quot;</span><span class="p">:</span> <span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span> <span class="s2">&quot;D&quot;</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="to_string_tuples"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.to_string_tuples">[docs]</a><span class="k">def</span> <span class="nf">to_string_tuples</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts frame columns to combined tuple string&quot;&quot;&quot;</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">r</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">a</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">row</span><span class="p">]):</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">row</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
+        <span class="n">rows</span><span class="p">,</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="value_to_nan"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.value_to_nan">[docs]</a><span class="k">def</span> <span class="nf">value_to_nan</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">frame</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_string_tuples_drop_val"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.to_string_tuples_drop_val">[docs]</a><span class="k">def</span> <span class="nf">to_string_tuples_drop_val</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">to_string_tuples</span><span class="p">(</span><span class="n">value_to_nan</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="strip_all_spaces"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.strip_all_spaces">[docs]</a><span class="k">def</span> <span class="nf">strip_all_spaces</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;strips all extra spaces (equivalent to a trim and remove doubled spaces)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        frame:</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_object_dtype</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">frame</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; +&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">frame</span>
+    <span class="k">return</span> <span class="n">frame</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">strip_all_spaces</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="downcast"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.downcast">[docs]</a><span class="k">def</span> <span class="nf">downcast</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downcasts integer types to smallest possible type</span>
+<span class="sd">    Args:</span>
+<span class="sd">        data:</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_integer_dtype</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="n">dmax</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
+        <span class="n">nmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;int</span><span class="si">{</span><span class="mi">2</span> <span class="o">**</span> <span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
+        <span class="k">if</span> <span class="n">dmax</span> <span class="o">&lt;=</span> <span class="n">nmax</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Int</span><span class="si">{</span><span class="mi">2</span> <span class="o">**</span> <span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="map_to_bool"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.map_to_bool">[docs]</a><span class="k">def</span> <span class="nf">map_to_bool</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">true_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">false_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fillna</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">rep_map</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">true_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rep_map</span><span class="p">[</span><span class="n">true_val</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">false_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rep_map</span><span class="p">[</span><span class="n">false_val</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">rep_map</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fillna</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">fillna</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">series</span></div>
+
+
+<div class="viewcode-block" id="as_list"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.as_list">[docs]</a><span class="k">def</span> <span class="nf">as_list</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">or</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">obj</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="as_df"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.as_df">[docs]</a><span class="k">def</span> <span class="nf">as_df</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="to_lower"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.to_lower">[docs]</a><span class="k">def</span> <span class="nf">to_lower</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">to_lower</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="drop_duplicates_case_insensitive"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.drop_duplicates_case_insensitive">[docs]</a><span class="k">def</span> <span class="nf">drop_duplicates_case_insensitive</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="s2">&quot;first&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">dup_frame</span> <span class="o">=</span> <span class="n">to_lower</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">dups</span> <span class="o">=</span> <span class="n">dup_frame</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">subset</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">dups</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="clean_frame"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.clean_frame">[docs]</a><span class="k">def</span> <span class="nf">clean_frame</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">case_insensitive</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">case_insensitive</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">drop_duplicates_case_insensitive</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">frame</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="disable_copy_warning"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.disable_copy_warning">[docs]</a><span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">disable_copy_warning</span><span class="p">():</span>
+    <span class="n">initial_setting</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">chained_assignment</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">chained_assignment</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">chained_assignment</span> <span class="o">=</span> <span class="n">initial_setting</span></div>
+
+
+<div class="viewcode-block" id="fillna_series"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.fillna_series">[docs]</a><span class="k">def</span> <span class="nf">fillna_series</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">_NA_FILL_INTEGER</span><span class="p">)</span>
+    <span class="n">series</span><span class="p">,</span> <span class="n">geo</span> <span class="o">=</span> <span class="n">fill_geoseries</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">geo</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">series</span>
+    <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">_NA_FILL_OBJECT</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fillna"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.fillna">[docs]</a><span class="k">def</span> <span class="nf">fillna</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">fillna_series</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">fillna_series</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frame</span></div>
+
+
+<div class="viewcode-block" id="unfillna_series"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.unfillna_series">[docs]</a><span class="k">def</span> <span class="nf">unfillna_series</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_number</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="n">_NA_FILL_INTEGER</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="n">_NA_FILL_OBJECT</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="unfillna"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.unfillna">[docs]</a><span class="k">def</span> <span class="nf">unfillna</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">unfillna_series</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">unfillna_series</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frame</span></div>
+
+
+<div class="viewcode-block" id="is_date_interval"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.is_date_interval">[docs]</a><span class="k">def</span> <span class="nf">is_date_interval</span><span class="p">(</span><span class="n">interval</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Interval</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">right</span> <span class="o">-</span> <span class="n">interval</span><span class="o">.</span><span class="n">left</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">interval</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H%M%S</span><span class="si">%f</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;000000000000&quot;</span>
+        <span class="ow">and</span> <span class="n">interval</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H%M%S</span><span class="si">%f</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;000000000000&quot;</span>
+        <span class="ow">and</span> <span class="n">diff</span><span class="o">.</span><span class="n">delta</span> <span class="o">%</span> <span class="nb">int</span><span class="p">(</span><span class="mf">8.64e13</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="interval_to_range"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.interval_to_range">[docs]</a><span class="k">def</span> <span class="nf">interval_to_range</span><span class="p">(</span><span class="n">interval</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Interval</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_date_interval</span><span class="p">(</span><span class="n">interval</span><span class="p">):</span>
+            <span class="c1"># date range</span>
+            <span class="k">return</span> <span class="n">adapt</span><span class="p">(</span><span class="n">DateRange</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span> <span class="n">interval</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">date</span><span class="p">()))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">interval</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">tz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">adapt</span><span class="p">(</span><span class="n">DateTimeTZRange</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">right</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">adapt</span><span class="p">(</span><span class="n">DateTimeRange</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">right</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_number</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">left</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">adapt</span><span class="p">(</span><span class="n">NumericRange</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">right</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;this adapter only works for dates/datetimes and numeric&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="period_to_interval"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.period_to_interval">[docs]</a><span class="k">def</span> <span class="nf">period_to_interval</span><span class="p">(</span><span class="n">period</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Period</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Interval</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">IntervalIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+        <span class="n">period</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+        <span class="n">period</span><span class="o">.</span><span class="n">end_time</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">closed</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="df_chunker"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.df_chunker">[docs]</a><span class="k">def</span> <span class="nf">df_chunker</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">],</span> <span class="n">size</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">frame</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">pos</span> <span class="p">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ser_to_date"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.ser_to_date">[docs]</a><span class="k">def</span> <span class="nf">ser_to_date</span><span class="p">(</span><span class="n">ser</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">start_or_end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">start_or_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">start_or_end</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">):</span>
+            <span class="n">start_or_end</span> <span class="o">=</span> <span class="s2">&quot;start_time&quot;</span>
+        <span class="k">elif</span> <span class="n">start_or_end</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">):</span>
+            <span class="n">start_or_end</span> <span class="o">=</span> <span class="s2">&quot;end_time&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown start_or_end </span><span class="si">{</span><span class="n">start_or_end</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start_or_end</span> <span class="o">=</span> <span class="s2">&quot;end_time&quot;</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_float_dtype</span><span class="p">(</span><span class="n">ser</span><span class="p">):</span>
+        <span class="n">ser</span> <span class="o">=</span> <span class="n">ser</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;Int64&quot;</span><span class="p">)</span>
+    <span class="n">pdindx</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">PeriodIndex</span><span class="p">(</span><span class="n">ser</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">freq</span><span class="p">),</span> <span class="n">start_or_end</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">pdindx</span><span class="o">.</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">to_series</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">ser</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_date"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.to_date">[docs]</a><span class="k">def</span> <span class="nf">to_date</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">freq_col</span><span class="p">,</span> <span class="n">date_col</span><span class="p">,</span> <span class="n">start_or_end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">date_freq_map</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">date_freq_map</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">date_freq_map</span> <span class="o">=</span> <span class="n">DATE_FREQ_MAP</span>
+    <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">ser</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">freq_col</span><span class="p">)[</span><span class="n">date_col</span><span class="p">]:</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ser</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">date_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">ser_to_date</span><span class="p">(</span>
+            <span class="n">ser</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">date_freq_map</span><span class="p">[</span><span class="n">f</span><span class="p">],</span> <span class="n">start_or_end</span><span class="o">=</span><span class="n">start_or_end</span>
+        <span class="p">)</span>
+    <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">date_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">date_col</span><span class="p">]</span><span class="o">.</span><span class="n">convert_dtypes</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="get_max_chars_in_common"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.get_max_chars_in_common">[docs]</a><span class="k">def</span> <span class="nf">get_max_chars_in_common</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="n">lower_end</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">upper_end</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">is_good</span><span class="p">(</span><span class="n">num_chars</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_chars</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_good</span><span class="p">(</span><span class="n">lower_end</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">midpoint</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">lower_end</span> <span class="o">+</span> <span class="n">upper_end</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">is_good</span><span class="p">(</span><span class="n">midpoint</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">g</span><span class="p">:</span>
+            <span class="n">lower_end</span> <span class="o">=</span> <span class="n">midpoint</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">upper_end</span> <span class="o">=</span> <span class="n">midpoint</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">lower_end</span> <span class="o">==</span> <span class="n">upper_end</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">upper_end</span></div>
+
+
+<div class="viewcode-block" id="get_common_initial_str"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.get_common_initial_str">[docs]</a><span class="k">def</span> <span class="nf">get_common_initial_str</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">:=</span> <span class="n">get_max_chars_in_common</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="k">def</span> <span class="nf">_infer_date</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">dropna</span><span class="p">()):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">dropna</span><span class="p">())</span>
+
+
+<span class="k">def</span> <span class="nf">_to_datetime</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+    <span class="n">has_tzinfo</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;tzinfo&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">has_tzinfo</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="convert_df_dates_to_timestamps"><a class="viewcode-back" href="../../postpanda_helper.html#postpanda_helper.pd_helpers.convert_df_dates_to_timestamps">[docs]</a><span class="k">def</span> <span class="nf">convert_df_dates_to_timestamps</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">obj_cols</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="s2">&quot;object&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
+    <span class="n">date_test</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">obj_cols</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_infer_date</span><span class="p">)</span>
+    <span class="n">date_cols</span> <span class="o">=</span> <span class="n">date_test</span><span class="p">[</span><span class="n">date_test</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+
+    <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+        <span class="n">frame</span><span class="p">[</span><span class="n">date_cols</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">date_cols</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_to_datetime</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">ff</span><span class="p">[</span><span class="n">date_cols</span><span class="p">]</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="n">date_cols</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_to_datetime</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ff</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Daniel Sullivan.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
