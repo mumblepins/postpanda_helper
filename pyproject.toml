@@ -29,7 +29,7 @@ markers = "platform_python_implementation == 'PyPy'"
 
 [tool.poetry.dev-dependencies]
 Sphinx = "^3.5"
-sphinx-rtd-theme = "^0.5"
+sphinx-rtd-theme = "^1.0"
 
 [tool.poetry.extras]
 geo = ["GeoAlchemy2", "geopandas"]
