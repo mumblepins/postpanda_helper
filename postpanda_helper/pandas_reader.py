@@ -91,11 +91,7 @@ class PandasReader(LoggerMixin, Process):
 
     def _run_w_cs(self):
         pd_reader = pd.read_csv(*self._args, **self._kwargs)
-        kwargs = {
-            k: v
-            for k, v in self._kwargs.items()
-            if k not in ["usecols", "parse_dates", "names", "dtypes"]
-        }
+        kwargs = {k: v for k, v in self._kwargs.items() if k not in ["usecols", "parse_dates", "names", "dtypes"]}
         kwargs["delimiter"] = chr(15)  # set a dummy delimiter, so we basically read the whole line
         pd_summer = pd.read_csv(*self._args, **kwargs)
         for cs_chunk, df_chunk in zip(pd_summer, pd_reader):

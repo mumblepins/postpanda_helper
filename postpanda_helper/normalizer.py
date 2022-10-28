@@ -59,9 +59,7 @@ def load_spec(file_path):
     return walk(yd)
 
 
-def normalizer(
-    frame: DataFrame, spec_file: Union[str, PathLike], substituter: SelectSert
-) -> list[DataFrame]:
+def normalizer(frame: DataFrame, spec_file: Union[str, PathLike], substituter: SelectSert) -> list[DataFrame]:
     """Normalizes dataframe based on a YAML spec file
 
     Modifies dataframe inplace
@@ -206,9 +204,7 @@ def normalizer(
             cols_for_json = list(set(frame.columns).difference(rs["excluded"]))
             if len(cols_for_json) == 0:
                 continue
-            frame[rs["json_column"]] = frame[cols_for_json].apply(
-                lambda x: x.dropna().to_dict() or None, axis=1
-            )
+            frame[rs["json_column"]] = frame[cols_for_json].apply(lambda x: x.dropna().to_dict() or None, axis=1)
         elif action == "drop_na_cols":
             frame.dropna(axis=1, how="all", inplace=True)
         elif action == "many_to_many":

@@ -9,7 +9,13 @@ from pandas.core.dtypes.inference import is_dict_like
 from pandas.io.sql import SQLTable, pandasSQL_builder
 from psycopg2 import errorcodes, sql
 from sqlalchemy import MetaData, Table
-from sqlalchemy.dialects.postgresql import insert, DATERANGE, TSTZRANGE, TSRANGE, NUMRANGE
+from sqlalchemy.dialects.postgresql import (
+    insert,
+    DATERANGE,
+    TSTZRANGE,
+    TSRANGE,
+    NUMRANGE,
+)
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.exc import ProgrammingError, SAWarning
 from sqlalchemy.ext.compiler import compiles
@@ -78,9 +84,7 @@ def create_df_table_altered(
 class PandaCSVtoSQL:
     def get_full_tablename(self, quotes=True):
         if quotes:
-            return (
-                f'"{self.schema}"."{self.table}"' if self.schema is not None else f'"{self.table}"'
-            )
+            return f'"{self.schema}"."{self.table}"' if self.schema is not None else f'"{self.table}"'
         else:
             return f"{self.schema}.{self.table}" if self.schema is not None else f"{self.table}"
 
@@ -94,9 +98,7 @@ class PandaCSVtoSQL:
     def sa_table(self):
         if self._sa_table is None:
             with disable_reflection_warning():
-                self._sa_table = Table(
-                    self.table, MetaData(self.engine), autoload=True, schema=self.schema
-                )
+                self._sa_table = Table(self.table, MetaData(self.engine), autoload=True, schema=self.schema)
         return self._sa_table
 
     @property
@@ -129,9 +131,7 @@ class PandaCSVtoSQL:
         self.temporary_tablename = "temp_table"
         self.cols = self.get_col_names()
         self.sql_cols = sql.Composed([sql.Identifier(c) for c in self.cols]).join(", ")
-        self.csv_import_sql = sql.SQL(
-            "COPY {table} ({columns}) FROM STDIN WITH (FORMAT CSV, FORCE_NULL ({columns}))"
-        )
+        self.csv_import_sql = sql.SQL("COPY {table} ({columns}) FROM STDIN WITH (FORMAT CSV, FORCE_NULL ({columns}))")
         if create_table and engine and primary_key:
             create_df_table_altered(
                 dframe.head(1),
@@ -155,9 +155,7 @@ class PandaCSVtoSQL:
                         conn.execution_options(autocommit=True).execute(
                             sql.SQL("ALTER TABLE {TABLE} ADD PRIMARY KEY ({COLUMNS})").format(
                                 table=sql.SQL(self.full_tablename),
-                                columns=sql.Composed([sql.Identifier(c) for c in primary_key]).join(
-                                    ", "
-                                ),
+                                columns=sql.Composed([sql.Identifier(c) for c in primary_key]).join(", "),
                             )
                         )
                         # @formatter:on
@@ -172,14 +170,14 @@ class PandaCSVtoSQL:
             file_handle = io.StringIO(newline="\n")
         if seek:
             start_pos = file_handle.seek(0, io.SEEK_END)
-        frame.to_csv(file_handle, header=False, index=self.index, line_terminator="\n")
+        frame.to_csv(file_handle, header=False, index=self.index, lineterminator="\n")
         if seek:
             file_handle.seek(start_pos)
         return file_handle
 
     def _to_csv_simple(self):
         file_handle = io.StringIO(newline="\n")
-        self.dframe.to_csv(file_handle, header=False, index=self.index, line_terminator="\n")
+        self.dframe.to_csv(file_handle, header=False, index=self.index, lineterminator="\n")
         file_handle.seek(0)
         return file_handle
 
@@ -209,8 +207,7 @@ class PandaCSVtoSQL:
                 cur.copy_expert(import_sql_command, csv_fh)
                 if use_temp_table:
                     matchers = [
-                        f'{self.full_tablename}."{k}" = {self.temporary_tablename}."{k}"'
-                        for k in self.primary_key
+                        f'{self.full_tablename}."{k}" = {self.temporary_tablename}."{k}"' for k in self.primary_key
                     ]
                     cur.execute(
                         f"DELETE FROM {self.full_tablename} "
@@ -220,9 +217,7 @@ class PandaCSVtoSQL:
                     if wait_on is not None:
                         await wait_on
                     cur.execute(
-                        sql.SQL(
-                            "INSERT INTO " + "{table_name} ({cols}) SELECT {cols} FROM {t_table}"
-                        ).format(
+                        sql.SQL("INSERT INTO " + "{table_name} ({cols}) SELECT {cols} FROM {t_table}").format(
                             table_name=sql.SQL(self.full_tablename),
                             cols=sql.Composed([sql.Identifier(c) for c in self.cols]).join(", "),
                             t_table=sql.SQL(self.temporary_tablename),
@@ -260,9 +255,7 @@ def psql_upsert(index_elements):
         if len(upsert_set) == 0:
             do_update = insert_stmt.on_conflict_do_nothing(index_elements=index_elements)
         else:
-            do_update = insert_stmt.on_conflict_do_update(
-                index_elements=index_elements, set_=upsert_set
-            )
+            do_update = insert_stmt.on_conflict_do_update(index_elements=index_elements, set_=upsert_set)
         conn.execute(do_update)
 
     return ret_func
@@ -282,9 +275,7 @@ def possible_upsert(pdtable: SQLTable, conn: Connection, keys, data_iter):
     if len(upsert_set) == 0:
         do_update = insert_stmt.on_conflict_do_nothing(index_elements=index_elements)
     else:
-        do_update = insert_stmt.on_conflict_do_update(
-            index_elements=index_elements, set_=upsert_set
-        )
+        do_update = insert_stmt.on_conflict_do_update(index_elements=index_elements, set_=upsert_set)
     conn.execute(do_update)
 
 
@@ -292,9 +283,7 @@ def possible_upsert(pdtable: SQLTable, conn: Connection, keys, data_iter):
 def disable_reflection_warning():
     try:
         with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore", category=SAWarning, message="Skipped unsupported reflection.*"
-            )
+            warnings.filterwarnings("ignore", category=SAWarning, message="Skipped unsupported reflection.*")
             yield
     finally:
         pass

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "postpanda_helper"
-version = "1.1.2"
+version = "1.1.3"
 description = "Various helpers for Postgres and Pandas, including SelectSert"
 authors = ["Daniel Sullivan <57496265+ds-mn@users.noreply.github.com>"]
 license = "LGPL-3.0-or-later"
@@ -13,15 +13,21 @@ python = "^3.8"
 numpy = "^1.15"
 pandas = "^1.1"
 SQLAlchemy = "^1.3"
-psycopg2 = "^2.8"
 logger-mixin = "^1.1.0"
 pathvalidate = "^2.3.2"
 GeoAlchemy2 = { version = "^0.8.4", optional = true }
 geopandas = { version = "^0.9.0", optional = true }
 PyYAML = "^5.3"
 
+[tool.poetry.dependencies.psycopg2]
+version = "^2.8"
+markers = "platform_python_implementation == 'CPython'"
+
+[tool.poetry.dependencies.psycopg2cffi]
+git = "https://github.com/chtd/psycopg2cffi.git"
+markers = "platform_python_implementation == 'PyPy'"
+
 [tool.poetry.dev-dependencies]
-black = { version = "^20", allow-prereleases = true }
 Sphinx = "^3.5"
 sphinx-rtd-theme = "^0.5"
 
@@ -33,7 +39,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-line-length = 100
+line-length = 120
 target-version = ['py38']
 include = '\.pyi?$'
 exclude = '''

@@ -2,6 +2,13 @@
 
 from numpy import int64 as _int64
 from pandas import NA as _NA, Interval as _Interval
+
+try:
+    from psycopg2cffi import compat as _psyco_compat
+
+    _psyco_compat.register()
+except ImportError:
+    pass
 from psycopg2.extensions import (
     AsIs as _AsIs,
     adapt as _adapt,

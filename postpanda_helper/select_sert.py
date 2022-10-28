@@ -16,9 +16,7 @@ from .psql_helpers import possible_upsert, disable_reflection_warning, pd_to_sql
 
 
 class SelectSert:
-    _IDX_NAME_FAKE = "fake_index_name_" + "".join(
-        random.SystemRandom().choices(string.ascii_lowercase, k=6)
-    )
+    _IDX_NAME_FAKE = "fake_index_name_" + "".join(random.SystemRandom().choices(string.ascii_lowercase, k=6))
 
     def __init__(self, connection: Union[str, Engine], default_schema: Optional[str] = None):
         """
@@ -39,9 +37,7 @@ class SelectSert:
     def _reflect_table(self, schema, table):
         if table not in self._sa_tables:
             with disable_reflection_warning():
-                self._sa_tables[schema][table] = Table(
-                    table, self._meta, schema=schema, autoload=True
-                )
+                self._sa_tables[schema][table] = Table(table, self._meta, schema=schema, autoload=True)
         return self._sa_tables[schema][table]
 
     def _get_current_ids(
@@ -71,9 +67,7 @@ class SelectSert:
             self._tables[schema][table_lkp] = ids
         return self._tables[schema][table_lkp]
 
-    def _convert_dtypes_to_table(
-        self, frame: pd.DataFrame, table: str, schema=None
-    ) -> pd.DataFrame:
+    def _convert_dtypes_to_table(self, frame: pd.DataFrame, table: str, schema=None) -> pd.DataFrame:
         meta = MetaData(self._conn)
         schema = schema or self._schema
         with disable_reflection_warning():
@@ -151,18 +145,16 @@ class SelectSert:
             test_sql = sql_ids
             test_frame = frame
         # noinspection PyTypeChecker
-        sql_tups = pdh.fillna(test_sql[frame.columns]).apply(tuple, axis=1)
+        sql_tups = pdh.fillna(test_sql.reindex(columns=frame.columns)).apply(tuple, axis=1)
         # noinspection PyTypeChecker
-        df_tups = pdh.fillna(test_frame.astype(sql_ids[frame.columns].dtypes)).apply(tuple, axis=1)
+        df_tups = pdh.fillna(test_frame.astype(sql_ids.reindex(columns=frame.columns).dtypes)).apply(tuple, axis=1)
         # to_remove = pd.Series([v in sql_tups.to_list() for v in df_tups], index=df_tups.index)
         to_remove = df_tups.isin(sql_tups)
         to_insert = frame[~to_remove]
         if to_insert.shape[0] == 0:
             return sql_ids
         self._insert(to_insert, table, schema=schema)
-        return self._get_current_ids(
-            table, force_update=True, schema=schema, filter_map=filter_columns
-        )
+        return self._get_current_ids(table, force_update=True, schema=schema, filter_map=filter_columns)
 
     def _unset_index(self, frame: pd.DataFrame, left: pd.DataFrame) -> str:
         idx_name = frame.index.name or "index"
@@ -272,11 +264,7 @@ class SelectSert:
 
         frame_cols = convert_df_dates_to_timestamps(frame_cols)
         ids = convert_df_dates_to_timestamps(ids)
-        left = pdh.fillna(
-            frame_cols.astype(
-                sql_types[sql_types.index.intersection(frame_cols.columns)]
-            ).reset_index()
-        )
+        left = pdh.fillna(frame_cols.astype(sql_types[sql_types.index.intersection(frame_cols.columns)]).reset_index())
         idx_name = self._unset_index(frame, left)
         right = pdh.fillna(ids)
         if case_insensitive:

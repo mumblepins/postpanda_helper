@@ -26,9 +26,7 @@ class PandasWriter(LoggerMixin):
         self._writers: Dict[(str, str), _PandasWriter] = {}
 
     def __getitem__(self, item):
-        if not (
-            isinstance(item, tuple) and len(item) == 2 and all(isinstance(i, str) for i in item)
-        ):
+        if not (isinstance(item, tuple) and len(item) == 2 and all(isinstance(i, str) for i in item)):
             raise ValueError("Must specify as pw[schema,table]")
         return self.get_writer(item[0], item[1])
 
@@ -122,8 +120,7 @@ class _PandasWriter(LoggerMixin):
             # Call to_write.get() until it returns None
             while (df := self._write_queue.get()) is not None:
                 self.logger.debug(
-                    f"Writing {self._schema}.{self._table} of size {df.shape} "
-                    f"Queue:{self._write_queue.qsize()}"
+                    f"Writing {self._schema}.{self._table} of size {df.shape} " f"Queue:{self._write_queue.qsize()}"
                 )
                 df.to_csv(fh, header=False, index=False, line_terminator="\n")
 

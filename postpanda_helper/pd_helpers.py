@@ -7,8 +7,8 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from psycopg2._psycopg import adapt
-from psycopg2._range import DateRange, DateTimeTZRange, DateTimeRange, NumericRange
+from psycopg2.extensions import adapt
+from psycopg2.extras import DateRange, DateTimeTZRange, DateTimeRange, NumericRange
 
 from postpanda_helper.geo_helpers import fill_geoseries
 
@@ -227,9 +227,7 @@ def to_date(frame: pd.DataFrame, freq_col, date_col, start_or_end=None, date_fre
     if date_freq_map is None:
         date_freq_map = DATE_FREQ_MAP
     for f, ser in frame.groupby(freq_col)[date_col]:
-        frame.loc[ser.index, date_col] = ser_to_date(
-            ser, freq=date_freq_map[f], start_or_end=start_or_end
-        )
+        frame.loc[ser.index, date_col] = ser_to_date(ser, freq=date_freq_map[f], start_or_end=start_or_end)
     frame.loc[:, date_col] = frame.loc[:, date_col].convert_dtypes()
 
 

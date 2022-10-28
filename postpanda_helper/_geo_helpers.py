@@ -89,9 +89,7 @@ def get_geometry_type(gs: "GeoSeries"):
 
 
 def geometry_to_ewkb(gs: GeoSeries, srid):
-    return gs.apply(
-        lambda x: dumps(x, srid=srid, hex=True) if isinstance(x, BaseGeometry) else None
-    )
+    return gs.apply(lambda x: dumps(x, srid=srid, hex=True) if isinstance(x, BaseGeometry) else None)
 
 
 def _convert_geometry_for_postgis(
