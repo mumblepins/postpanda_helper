@@ -27,9 +27,10 @@ PyYAML = "*"
 version = "^2.8"
 markers = "platform_python_implementation == 'CPython'"
 
-[tool.poetry.dependencies.psycopg2cffi]
-git = "https://github.com/chtd/psycopg2cffi.git"
-markers = "platform_python_implementation == 'PyPy'"
+#[tool.poetry.dependencies.psycopg2cffi]
+##git = "https://github.com/chtd/psycopg2cffi.git"
+#version = "*"
+#markers = "platform_python_implementation == 'PyPy'"
 
 [tool.poetry.group.dev.dependencies]
 # region pre-commit hooks and linting
