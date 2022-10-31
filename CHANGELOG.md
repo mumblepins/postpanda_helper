@@ -1,13 +1,15 @@
 # Changelog
 
 
-## (unreleased)
+## v1.2.0 (2022-10-31)
 
 ### Fix
 
   * [2022-10-31](bfe85d7710e863dbeb23d5645dcf08c0fe3961cf) – Precommit and things.  <small>([Daniel Sullivan](mailto:daniel.j.sullivan@state.mn.us))</small>
 
 ### Other
+
+  * [2022-10-31](4f8d3d6eb282eb05c626e917eb14e38c3fc3df78) – Ci: docs.  <small>([Daniel Sullivan](mailto:daniel.j.sullivan@state.mn.us))</small>
 
   * [2022-10-31](d5c85a4b20b2f752779515b5f42e6d98ec593ec2) – Chore: updated deps.  <small>([Daniel Sullivan](mailto:daniel.j.sullivan@state.mn.us))</small>
 

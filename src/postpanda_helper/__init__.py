@@ -3,7 +3,7 @@
 from numpy import int64 as _int64
 from pandas import NA as _NA, Interval as _Interval
 
-__version__: str = "1.1.3"
+__version__: str = "1.2.0"
 
 try:
     from psycopg2cffi import compat as _psyco_compat
