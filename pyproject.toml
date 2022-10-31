@@ -21,7 +21,7 @@ pathvalidate = "^2.3.2"
 GeoAlchemy2 = { version = ">=0.8.4", optional = true }
 geopandas = { version = ">=0.9.0", optional = true }
 shapely = { version = "*", optional = true }
-PyYAML = "^5.3"
+PyYAML = "*"
 
 [tool.poetry.dependencies.psycopg2]
 version = "^2.8"

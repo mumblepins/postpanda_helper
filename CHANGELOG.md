@@ -9,6 +9,8 @@
 
 ### Other
 
+  * [2022-10-31](47cadd5cef7c4aaa1433ba17d48f488563f2e312) – Ci: update github actions.  <small>([Daniel Sullivan](mailto:daniel.j.sullivan@state.mn.us))</small>
+
   * [2022-10-31](c48650ec29ce40a678159747749ed8d32f1dc130) – Ci: update github action.  <small>([Daniel Sullivan](mailto:daniel.j.sullivan@state.mn.us))</small>
 
   * [2022-10-31](2d9a0694273c06b80d24af7e40c439b7ab082cf6) – Ci: update github action.  <small>([Daniel Sullivan](mailto:daniel.j.sullivan@state.mn.us))</small>
