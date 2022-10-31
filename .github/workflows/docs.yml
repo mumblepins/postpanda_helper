@@ -12,7 +12,7 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           concurrent_skipping: 'same_content_newer'
-          do_not_skip: '["pull_request", "workflow_dispatch", "schedule", "create", "release"]'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule", "release"]'
   docs:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
