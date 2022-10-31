@@ -1,8 +1,7 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 # coding=utf-8
 from hashlib import blake2b
-from multiprocessing import Process
-from multiprocessing import Queue
+from multiprocessing import Process, Queue
 from pathlib import Path
 from typing import Mapping, Optional
 
@@ -45,7 +44,7 @@ class PandasReader(LoggerMixin, Process):
         self._get_checksum = get_checksum
         try:
             name = Path(args[0]).name
-        except:
+        except Exception:
             name = Path(kwargs.get("filepath_or_buffer", "")).name
         self.fname = name.encode("utf8")
         self._column_to_uuid = column_to_uuid

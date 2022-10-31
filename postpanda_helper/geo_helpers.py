@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from collections import MutableMapping
 from typing import Optional
 
@@ -9,12 +9,12 @@ from sqlalchemy.sql.type_api import UserDefinedType
 HAS_GEO_EXTENSIONS = False
 
 try:
-    from ._geo_helpers import (
+    from ._geo_helpers import (  # noqa: F401
+        _convert_geometry_for_postgis,
         _df_to_shape,
         _fill_geoseries,
-        get_geometry_type,
         geometry_to_ewkb,
-        _convert_geometry_for_postgis,
+        get_geometry_type,
     )
 
     df_to_shape = _df_to_shape

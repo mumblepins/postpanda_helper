@@ -1,8 +1,8 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import io
 import warnings
 from contextlib import contextmanager
-from typing import Optional, MutableMapping, Any
+from typing import Any, MutableMapping, Optional
 
 import pandas as pd
 from pandas.core.dtypes.inference import is_dict_like
@@ -10,11 +10,11 @@ from pandas.io.sql import SQLTable, pandasSQL_builder
 from psycopg2 import errorcodes, sql
 from sqlalchemy import MetaData, Table
 from sqlalchemy.dialects.postgresql import (
-    insert,
     DATERANGE,
-    TSTZRANGE,
-    TSRANGE,
     NUMRANGE,
+    TSRANGE,
+    TSTZRANGE,
+    insert,
 )
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.exc import ProgrammingError, SAWarning
@@ -51,7 +51,7 @@ def create_df_table_altered(
         dtype = {col_name: dtype for col_name in frame}
 
     if dtype is not None:
-        from sqlalchemy.types import to_instance, TypeEngine
+        from sqlalchemy.types import TypeEngine, to_instance
 
         for col, my_type in dtype.items():
             if not isinstance(to_instance(my_type), TypeEngine):
@@ -210,14 +210,17 @@ class PandaCSVtoSQL:
                         f'{self.full_tablename}."{k}" = {self.temporary_tablename}."{k}"' for k in self.primary_key
                     ]
                     cur.execute(
-                        f"DELETE FROM {self.full_tablename} "
+                        f"DELETE FROM {self.full_tablename} "  # nosec
                         f"USING {self.temporary_tablename} "
                         f'WHERE {" and ".join(matchers)}'
                     )
                     if wait_on is not None:
                         await wait_on
                     cur.execute(
-                        sql.SQL("INSERT INTO " + "{table_name} ({cols}) SELECT {cols} FROM {t_table}").format(
+                        sql.SQL(
+                            "INSERT INTO {table_name} ({cols}) SELECT {cols} FROM {t_table}"
+                            # nosec
+                        ).format(
                             table_name=sql.SQL(self.full_tablename),
                             cols=sql.Composed([sql.Identifier(c) for c in self.cols]).join(", "),
                             t_table=sql.SQL(self.temporary_tablename),

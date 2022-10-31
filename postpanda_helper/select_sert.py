@@ -1,18 +1,18 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import random
 import string
 from collections import defaultdict
-from typing import Union, Sequence, Mapping, Any, Optional
+from typing import Any, Mapping, Optional, Sequence, Union
 
 import pandas as pd
 import sqlalchemy.sql as sasql
-from sqlalchemy import create_engine, MetaData, Table, types as satypes, and_
+from sqlalchemy import MetaData, Table, and_, create_engine, types as satypes
 from sqlalchemy.engine import Engine
 
 from . import pd_helpers as pdh
 from .geo_helpers import df_to_shape
-from .pd_helpers import get_common_initial_str, convert_df_dates_to_timestamps
-from .psql_helpers import possible_upsert, disable_reflection_warning, pd_to_sql
+from .pd_helpers import convert_df_dates_to_timestamps, get_common_initial_str
+from .psql_helpers import disable_reflection_warning, pd_to_sql, possible_upsert
 
 
 class SelectSert:
@@ -216,7 +216,7 @@ class SelectSert:
                 filter_columns=filter_columns,
             )
 
-    def _replace_with_ids(
+    def _replace_with_ids(  # noqa: C901  # pylint: disable=too-many-branches
         self,
         frame: pd.DataFrame,
         columns: Union[Sequence[str], str],

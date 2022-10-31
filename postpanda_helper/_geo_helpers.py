@@ -1,6 +1,6 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 # noinspection PyPackageRequirements
-from typing import Optional, MutableMapping
+from typing import MutableMapping, Optional
 
 import geopandas as gpd
 

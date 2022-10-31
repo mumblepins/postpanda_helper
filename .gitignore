@@ -245,3 +245,6 @@ $RECYCLE.BIN/
 
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
+.idea/aws.xml
+.idea/git_toolbox_prj.xml
+.idea/GitLink.xml

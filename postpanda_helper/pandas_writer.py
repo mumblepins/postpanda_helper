@@ -1,8 +1,8 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import asyncio
 import gzip
 import tempfile
-from multiprocessing import Queue, Process
+from multiprocessing import Process, Queue
 from pathlib import Path
 from shutil import rmtree
 from typing import Dict, Optional
@@ -51,7 +51,7 @@ class PandasWriter(LoggerMixin):
         Returns:
 
         """
-        for n, w in self._writers.items():
+        for _, w in self._writers.items():
             w.thread.join()
             w.to_sql(self.engine, upsert)
         if cleanup:
@@ -63,7 +63,7 @@ class PandasWriter(LoggerMixin):
         Returns:
 
         """
-        for n, w in self._writers.items():
+        for _, w in self._writers.items():
             w.put_queue(None)
 
 

@@ -1,11 +1,12 @@
+# region Poetry
 [tool.poetry]
 name = "postpanda_helper"
 version = "1.1.3"
 description = "Various helpers for Postgres and Pandas, including SelectSert"
-authors = ["Daniel Sullivan <57496265+ds-mn@users.noreply.github.com>"]
+authors = ["Daniel Sullivan <4440652+mumblepins@users.noreply.github.com>"]
 license = "LGPL-3.0-or-later"
-repository = "https://github.com/ds-mn/postpanda_helper"
-documentation = "https://ds-mn.github.io/postpanda_helper/"
+repository = "https://github.com/mumblepins/postpanda_helper"
+documentation = "https://mumblepins.github.io/postpanda_helper/"
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -15,8 +16,9 @@ pandas = "^1.1"
 SQLAlchemy = "^1.3"
 logger-mixin = "^1.1.0"
 pathvalidate = "^2.3.2"
-GeoAlchemy2 = { version = "^0.8.4", optional = true }
-geopandas = { version = "^0.9.0", optional = true }
+GeoAlchemy2 = { version = ">=0.8.4", optional = true }
+geopandas = { version = ">=0.9.0", optional = true }
+shapely = { version = "*", optional = true }
 PyYAML = "^5.3"
 
 [tool.poetry.dependencies.psycopg2]
@@ -27,34 +29,134 @@ markers = "platform_python_implementation == 'CPython'"
 git = "https://github.com/chtd/psycopg2cffi.git"
 markers = "platform_python_implementation == 'PyPy'"
 
-[tool.poetry.dev-dependencies]
-Sphinx = "^3.5"
-sphinx-rtd-theme = "^0.5"
+[tool.poetry.group.dev.dependencies]
+# region pre-commit hooks and linting
+pylint = "^2.13.0"
+pytest = "^7.1.1"
+coverage = { version = "^6.3.2", extras = ['toml'] }
+Sphinx = "^4.4"
+sphinx-material = "^0.0.35"
+pytest-cov = "^3.0.0"
+gitchangelog = { version = "^3.0" }
+pylint-pytest = "^1.1.2"
+pytest-xdist = "^2.5.0"
+myst-parser = "^0.18.0"
+# endregion
+bump2version = "^1.0.1"
+pystache = "^0.6.0"
+toml = "^0.10.2"
 
 [tool.poetry.extras]
-geo = ["GeoAlchemy2", "geopandas"]
+geo = ["GeoAlchemy2", "geopandas", "shapely"]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.1.0b2"]
 build-backend = "poetry.core.masonry.api"
+#endregion
 
+
+# region pytest
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "DEBUG"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+#endregion
+
+# region Mypy
+[tool.mypy]
+files = '*.py,src/**/*.py'
+exclude = '''(?x)(
+      \.eggs
+    | \.git          # root of the project
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | \.cache
+  | env
+  | venv
+  | \.aws-sam
+  | _build
+  | buck-out
+  | build
+  | dist
+  | package_
+)'''
+#plugins = ["pydantic.mypy"]
+overrides = [
+    { module = 'pystache.*', ignore_missing_imports = true },
+]
+#endregion
+
+# region ISort
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+line_length = 88
+indent = '    '
+multi_line_output = 3
+skip = 'env'
+include_trailing_comma = true
+combine_as_imports = true
+force_grid_wrap = 0
+known_first_party = ["postpanda_helper"]
+# endregion
+
+# region Black
 [tool.black]
 line-length = 120
-target-version = ['py38']
 include = '\.pyi?$'
+target-version = ['py38', 'py39', 'py310']
 exclude = '''
-(
-  /(
+/(
       \.eggs         # exclude a few common directories in the
     | \.git          # root of the project
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-  )/
-)
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | \.cache
+  | env
+  | venv
+  | \.aws-sam
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
 '''
+# endregion
+
+# region DepChecker
+[tool.dep_checker.name_mapping]
+gitpython = "git"
+python-dateutil = "dateutil"
+python-dotenv = "dotenv"
+SQLAlchemy = "sqlalchemy"
+GeoAlchemy2 = "geoalchemy2"
+PyYAML = "yaml"
+
+#endregion
+
+#region Coverage
+[tool.coverage.run]
+branch = true
+omit = ["*/contract/suite/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "if .*? == .DEBUG.",
+    "if .*? == .INFO.",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:"
+]
+#endregion

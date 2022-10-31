@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import random
 import string
 from contextlib import contextmanager
@@ -8,7 +8,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from psycopg2.extensions import adapt
-from psycopg2.extras import DateRange, DateTimeTZRange, DateTimeRange, NumericRange
+from psycopg2.extras import DateRange, DateTimeRange, DateTimeTZRange, NumericRange
 
 from postpanda_helper.geo_helpers import fill_geoseries
 

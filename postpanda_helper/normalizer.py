@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from os import PathLike
 from typing import Union
 
@@ -10,12 +10,12 @@ from postpanda_helper.pd_helpers import to_string_tuples_drop_val
 
 
 def handle_exec(obj):
-    g = {}
-    l = {}
+    _globals = {}
+    _locals = {}
     ret = {}
-    exec(obj["code"], g, l)
+    exec(obj["code"], _globals, _locals)  # nosec
     for k in obj["keys"]:
-        ret[k] = g.get(k, l.get(k))
+        ret[k] = _globals.get(k, _locals.get(k))
     return ret
 
 
@@ -54,12 +54,14 @@ def walk(obj):
 
 
 def load_spec(file_path):
-    with open(file_path) as fh:
+    with open(file_path, encoding="utf8") as fh:
         yd = yaml.safe_load(fh)
     return walk(yd)
 
 
-def normalizer(frame: DataFrame, spec_file: Union[str, PathLike], substituter: SelectSert) -> list[DataFrame]:
+def normalizer(  # noqa: C901  # pylint: disable=too-many-branches
+    frame: DataFrame, spec_file: Union[str, PathLike], substituter: SelectSert
+) -> list[DataFrame]:
     """Normalizes dataframe based on a YAML spec file
 
     Modifies dataframe inplace
