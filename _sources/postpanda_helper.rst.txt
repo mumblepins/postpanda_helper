@@ -13,7 +13,7 @@ postpanda\_helper.geo\_helpers module
    :show-inheritance:
 
 postpanda\_helper.normalizer module
------------------------------------------
+-----------------------------------
 
 .. automodule:: postpanda_helper.normalizer
    :members:
