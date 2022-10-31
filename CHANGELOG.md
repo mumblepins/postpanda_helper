@@ -3,6 +3,10 @@
 
 ## (unreleased)
 
+### Fix
+
+  * [2022-10-31](bfe85d7710e863dbeb23d5645dcf08c0fe3961cf) – Precommit and things.  <small>([Daniel Sullivan](mailto:daniel.j.sullivan@state.mn.us))</small>
+
 ### Other
 
   * [2022-10-31](a6d161dcb3a7c6179a25fac21a9ac15fcc97891a) – Chore: touch.  <small>([Daniel Sullivan](mailto:daniel.j.sullivan@state.mn.us))</small>
