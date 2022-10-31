@@ -66,7 +66,7 @@ repos:
     rev: 1.7.4
     hooks:
       - id: bandit
-        files: "^postpanda_helper/"
+        files: "^src/"
   - repo: https://github.com/mumblepins/flake2lint
     rev: 59e22d9af7e1cac6eb9ed44f89f477af64ee4f69
     hooks:

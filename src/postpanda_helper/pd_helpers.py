@@ -10,7 +10,7 @@ import pandas as pd
 from psycopg2.extensions import adapt
 from psycopg2.extras import DateRange, DateTimeRange, DateTimeTZRange, NumericRange
 
-from postpanda_helper.geo_helpers import fill_geoseries
+from .geo_helpers import fill_geoseries
 
 _NA_FILL_INTEGER = np.uint64(random.SystemRandom().getrandbits(64)).astype(np.int64)
 _NA_FILL_OBJECT = "na_val_" + "".join(random.SystemRandom().choices(string.ascii_lowercase, k=8))

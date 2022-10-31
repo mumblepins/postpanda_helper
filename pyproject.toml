@@ -9,6 +9,8 @@ repository = "https://github.com/mumblepins/postpanda_helper"
 documentation = "https://mumblepins.github.io/postpanda_helper/"
 readme = "README.md"
 
+packages = [{ include = "postpanda_helper", from = 'src' }]
+
 [tool.poetry.dependencies]
 python = "^3.8"
 numpy = "^1.15"

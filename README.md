@@ -4,4 +4,4 @@
 
 Various helpers for PostgreSQL and Pandas
 
-[![Documentation](https://img.shields.io/static/v1?label=&message=Documentation&color=blue&style=for-the-badge&logo=Read+the+Docs&logoColor=white)](https://ds-mn.github.io/postpanda_helper/)
+[![Documentation](https://img.shields.io/static/v1?label=&message=Documentation&color=blue&style=for-the-badge&logo=Read+the+Docs&logoColor=white)](https://mumblepins.github.io/postpanda_helper/)

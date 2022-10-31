@@ -5,8 +5,8 @@ from typing import Union
 import yaml
 from pandas import DataFrame
 
-from postpanda_helper import SelectSert
-from postpanda_helper.pd_helpers import to_string_tuples_drop_val
+from . import SelectSert
+from .pd_helpers import to_string_tuples_drop_val
 
 
 def handle_exec(obj):
