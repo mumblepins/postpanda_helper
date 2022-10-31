@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v1.2.1 (2022-10-31)
+
+### Fix
+
+  * [2022-10-31](da89b9a8c969f18b0b81d03f011f75cd3e7bdb1e) – Removed cffi for pypi compatibility.  <small>([Daniel Sullivan](mailto:daniel.j.sullivan@state.mn.us))</small>
+
+
 ## v1.2.0 (2022-10-31)
 
 ### Fix

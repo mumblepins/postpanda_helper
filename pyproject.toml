@@ -1,7 +1,7 @@
 # region Poetry
 [tool.poetry]
 name = "postpanda_helper"
-version = "1.2.0"
+version = "1.2.1"
 description = "Various helpers for Postgres and Pandas, including SelectSert"
 authors = ["Daniel Sullivan <4440652+mumblepins@users.noreply.github.com>"]
 license = "LGPL-3.0-or-later"
