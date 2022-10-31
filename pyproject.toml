@@ -88,6 +88,11 @@ exclude = '''(?x)(
 #plugins = ["pydantic.mypy"]
 overrides = [
     { module = 'pystache.*', ignore_missing_imports = true },
+    { module = 'logger_mixin.*', ignore_missing_imports = true },
+]
+plugins = [
+    "numpy.typing.mypy_plugin",
+    "sqlalchemy.ext.mypy.plugin"
 ]
 #endregion
 

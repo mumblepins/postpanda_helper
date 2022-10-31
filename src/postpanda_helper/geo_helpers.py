@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from collections import MutableMapping
-from typing import Optional
+from typing import MutableMapping, Optional, Tuple
 
 from pandas import DataFrame, Series
 from sqlalchemy import Table
@@ -26,10 +25,10 @@ except ImportError:
     def df_to_shape(tbl: Table, frame: DataFrame) -> None:
         pass
 
-    def fill_geoseries(s: Series) -> (Series, bool):
+    def fill_geoseries(s: Series) -> Tuple[Series, bool]:
         return s, False
 
     def convert_geometry_for_postgis(
         frame: DataFrame, column: str, in_place: bool = False
-    ) -> (Optional[DataFrame], MutableMapping[str, UserDefinedType]):
+    ) -> Tuple[Optional[DataFrame], MutableMapping[str, UserDefinedType]]:
         return None, {}

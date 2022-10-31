@@ -77,6 +77,7 @@ def downcast(data: pd.Series) -> pd.Series:
         nmax = np.iinfo(f"int{2 ** n}").max
         if dmax <= nmax:
             return data.astype(f"Int{2 ** n}")
+    return data.astype(f"Int{2 ** n}")
 
 
 def map_to_bool(series: pd.Series, true_val=None, false_val=None, fillna=False):

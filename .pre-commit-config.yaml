@@ -67,12 +67,11 @@ repos:
     hooks:
       - id: bandit
         files: "^src/"
-  - repo: https://github.com/mumblepins/flake2lint
-    rev: 59e22d9af7e1cac6eb9ed44f89f477af64ee4f69
+  - repo: https://github.com/domdfcoding/flake2lint
+    rev: v0.4.2
     hooks:
       - id: flake2lint
-
-        files: "^postpanda_helper/"
+        files: "^src/postpanda_helper/"
   - repo: https://github.com/mumblepins/dep_checker
     rev: v0.7.0
     hooks:
@@ -80,22 +79,27 @@ repos:
         args:
           - --req-file
           - pyproject.toml
-          - postpanda_helper
+          - src/postpanda_helper
           - -a
           - psycopg2cffi
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v0.982'
-    hooks:
-      - id: mypy
-#        pass_filenames: false
-        args: [ '--config-file', 'pyproject.toml' ]
-        files: '^(src/.*|[^/]*)\.py$'
-        additional_dependencies:
-          - types-requests
-          - pydantic
-          - html2text
-          - boto3-stubs
-          - pytest-stub
+#  - repo: https://github.com/pre-commit/mirrors-mypy
+#    rev: 'v0.982'
+#    hooks:
+#      - id: mypy
+##        pass_filenames: false
+#        args: [ '--config-file', 'pyproject.toml' ]
+#        files: '^(src/.*|[^/]*)\.py$'
+#        additional_dependencies:
+#          - types-requests
+#          - pydantic
+#          - html2text
+#          - boto3-stubs
+#          - pytest-stub
+#          - types-PyYaml
+#          - pandas-stubs
+#          - sqlalchemy[mypy]
+#          - types-psycopg2
+#          - numpy>=1.20
 #  - repo: local
 #    hooks:
 #      - id: pylint

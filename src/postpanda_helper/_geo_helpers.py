@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 # noinspection PyPackageRequirements
-from typing import MutableMapping, Optional
+from typing import MutableMapping, Optional, Tuple
 
 import geopandas as gpd
-
-# noinspection PyPackageRequirements
 from geoalchemy2 import Geometry
-
-# noinspection PyPackageRequirements
 from geoalchemy2.shape import to_shape
-
-# noinspection PyPackageRequirements
 from geopandas import GeoSeries
 from geopandas.array import GeometryDtype
 from pandas import DataFrame, Series
@@ -52,7 +46,7 @@ def _df_to_shape(tbl: Table, frame: DataFrame) -> None:
         frame[gc] = gpd.GeoSeries(frame[gc], crs=crs)
 
 
-def _fill_geoseries(s: Series) -> (Series, bool):
+def _fill_geoseries(s: Series) -> Tuple[Series, bool]:
     gs = False
     if isinstance(s.dtype, gpd.array.GeometryDtype):
         s = s.fillna(_NA_FILL_GEOM)
@@ -94,7 +88,7 @@ def geometry_to_ewkb(gs: GeoSeries, srid):
 
 def _convert_geometry_for_postgis(
     frame: DataFrame, column: str, in_place: bool = False
-) -> (Optional[DataFrame], MutableMapping[str, UserDefinedType]):
+) -> Tuple[Optional[DataFrame], MutableMapping[str, UserDefinedType]]:
     # copy because we're going to mess with the column
     if in_place:
         ret_val = None

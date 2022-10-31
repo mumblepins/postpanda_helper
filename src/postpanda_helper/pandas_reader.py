@@ -40,7 +40,7 @@ class PandasReader(LoggerMixin, Process):
         super().__init__()
         self._args = args
         self._kwargs = kwargs
-        self._q = Queue(maxsize=queue_max_size)
+        self._q: Queue = Queue(maxsize=queue_max_size)
         self._get_checksum = get_checksum
         try:
             name = Path(args[0]).name

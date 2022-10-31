@@ -2,10 +2,11 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/postpanda_helper.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/docs/build" />
     </content>
-    <orderEntry type="jdk" jdkName="Poetry (postpanda_helper)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Poetry (postpanda_helper) (2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
@@ -15,5 +16,8 @@
   <component name="PyDocumentationSettings">
     <option name="format" value="GOOGLE" />
     <option name="myDocStringFormat" value="Google" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="py.test" />
   </component>
 </module>

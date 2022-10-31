@@ -65,6 +65,7 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="retrievers.vin.get_other_wmis.df" />
+          <option value="multiprocessing.*" />
         </list>
       </option>
     </inspection_tool>
