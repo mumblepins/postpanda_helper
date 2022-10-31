@@ -219,14 +219,14 @@
     <li class="md-nav__item">
     
     
-      <a href="../../postpanda_helper.html#postpanda-helper-geo-helpers-module" class="md-nav__link">postpanda_helper.geo_helpers module</a>
+      <a href="../../postpanda_helper.html#module-postpanda_helper.geo_helpers" class="md-nav__link">postpanda_helper.geo_helpers module</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="../../postpanda_helper.html#postpanda-helper-normalizer-module" class="md-nav__link">postpanda_helper.normalizer module</a>
+      <a href="../../postpanda_helper.html#module-postpanda_helper.normalizer" class="md-nav__link">postpanda_helper.normalizer module</a>
       
     
     </li>
@@ -240,35 +240,35 @@
     <li class="md-nav__item">
     
     
-      <a href="../../postpanda_helper.html#postpanda-helper-pandas-writer-module" class="md-nav__link">postpanda_helper.pandas_writer module</a>
+      <a href="../../postpanda_helper.html#module-postpanda_helper.pandas_writer" class="md-nav__link">postpanda_helper.pandas_writer module</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="../../postpanda_helper.html#postpanda-helper-pd-helpers-module" class="md-nav__link">postpanda_helper.pd_helpers module</a>
+      <a href="../../postpanda_helper.html#module-postpanda_helper.pd_helpers" class="md-nav__link">postpanda_helper.pd_helpers module</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="../../postpanda_helper.html#postpanda-helper-psql-helpers-module" class="md-nav__link">postpanda_helper.psql_helpers module</a>
+      <a href="../../postpanda_helper.html#module-postpanda_helper.psql_helpers" class="md-nav__link">postpanda_helper.psql_helpers module</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="../../postpanda_helper.html#postpanda-helper-select-sert-module" class="md-nav__link">postpanda_helper.select_sert module</a>
+      <a href="../../postpanda_helper.html#module-postpanda_helper.select_sert" class="md-nav__link">postpanda_helper.select_sert module</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="../../postpanda_helper.html#module-contents" class="md-nav__link">Module contents</a>
+      <a href="../../postpanda_helper.html#module-postpanda_helper" class="md-nav__link">Module contents</a>
       
     
     </li></ul>
@@ -343,7 +343,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">args</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">queue_max_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_q</span><span class="p">:</span> <span class="n">Queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">queue_max_size</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_checksum</span> <span class="o">=</span> <span class="n">get_checksum</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">name</span>
