@@ -28,7 +28,7 @@ git = "https://github.com/chtd/psycopg2cffi.git"
 markers = "platform_python_implementation == 'PyPy'"
 
 [tool.poetry.dev-dependencies]
-Sphinx = "^3.5"
+Sphinx = "^5.3"
 sphinx-rtd-theme = "^0.5"
 
 [tool.poetry.extras]
