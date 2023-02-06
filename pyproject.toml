@@ -15,7 +15,7 @@ packages = [{ include = "postpanda_helper", from = 'src' }]
 python = "^3.8"
 numpy = "^1.15"
 pandas = "^1.1"
-SQLAlchemy = "^1.3"
+SQLAlchemy = ">=1.3,<3.0"
 logger-mixin = "^1.1.0"
 pathvalidate = "^2.3.2"
 GeoAlchemy2 = { version = ">=0.8.4", optional = true }
